@@ -308,6 +308,7 @@ var settings = {
 					leave:		function() { $header.removeClass('alt'); $header.addClass('reveal'); }
 				});
 
+
 			}
 
 	});

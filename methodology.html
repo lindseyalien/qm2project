@@ -67,6 +67,14 @@
 									<p>Project Overview</p>
 									<h2>Our data</h2>
 								</header>
+										<h1 class="align-center">Data Credibility/Reliability</h1>
+										<p>EM-DAT is maintained by the Centre for Research on the Epidemiology of Disasters (CRED), which is situated at the School of Public Health of the Université catholique de Louvain (EM-DAT The International Disaster Database, n.d.). In EM-DAT The International Disaster Database we found around 7940 accounts of natural disasters from the 1990s to present, which include economic, geographical, and temporal information of the disasters. According to the website, the database consists of information from various sources, which include research institutes, press agencies, UN agencies, insurance companies, and non-governmental organizations. We note that priority is given to data from UN agencies, government, and the International Federation of Red Cross and Red Crescent Societies on grounds of the quality of the data. Indeed, it is highlighted that most reporting sources have political limitations (e.g. exaggeration, concealment) or do not cover exhaustive details of the natural disasters.</p>
+										<p>Publicly accessible information on EM-DAT is updated every three months, with entries being constantly reviewed for inconsistencies, incompleteness, or redundancy. All the data has been validated and cross-checked using various sources. Major revisions are made at the end of each calendar year (EM-DAT The International Disaster Database, n.d.).</p>
+										<p>We experienced difficulty in collecting reliable media data. We thought about using twitter or Facebook as our sources but soon realised it was impractical to count the number of relevant results while ensuring the quality of our data. We were also suspicious that the number of tweets may not genuinely reflect the intensity of media responses to natural disasters. As a result, we decided to use Google Trends instead, where multiple search criteria could be applied and .csv files were readily available to download.</p>
+										<p>It is important to note that Google Trends uses ‘Interest over time’ as the measure for media response. A value of 100 represent peak popularity for the term, whereas a value of 50 means that the term is half as popular. As Google Trends presents regional search interest proportionally, we do not need to worry about normalising the data based on the actual number of searches in different regions.</p>
+										<h1 class="align-center">Data Processing</h1>
+										<p>We note that empty fields and “0”s frequently appear in the database, which can indicate either missing values or non-reported information. As the column of number affected has the least number of empty fields, using number affected as our selection criteria for natural disaster is the most reliable way of processing our data.</p>
+										<p>We sort both natural disaster data and media data in the descending order and record the top five of each dataset to reduce the amount of data we have to analyse. However, this is only the minimum amount of data required to meet the project goal. If there is no time constraints, we can achieve a more accurate visualisation by extending the range of data.</p>
 							</div>
 						</div>
 					</div>
@@ -81,6 +89,31 @@
 										<p>Methodology</p>
 										<h2>Data processing</h2>
 									</header>
+									<h1 class="align-center">EM-DAT Data Collection Process</h1>
+									<ol>
+										<li>Remove data before 1st January 2008 and after 1st June 2018 for each disaster type using Python</li>
+										<li>Find the top five natural disasters by people affected, magnitude, and deaths for each disaster type</li>
+										<li>Count the total number of disasters in each country</li>
+										<li>Sort the data by number affected</li>
+										<li>Record the top five natural disasters</li>
+									</ol>
+
+									<h1 class="align-center">Google Trends Data Collection Process</h1>
+									<ol>
+										<li>Edit time frame of disaster data to Jan 1st, 2008 to June 1st, 2018</li>
+										<li>Edit top 5 of disaster data to include the actual top five, not by country</li>
+										<li>Download CSV file for worldwide search popularity of all disaster types from 2008 to present, and also download CSV file for individual country breakdown</li>
+										<li>Download CSV file for worldwide search popularity for individual disaster types. Enter our disaster types as a topic.</li>
+										<li>Identify five biggest online reactions, and match them with corresponding natural disasters.</li>
+										<li>Match the top five natural disasters with their online responses.</li>
+									</ol>
+
+									<h1 class="align-center">Final steps</h1>
+									<ol>
+										<li>Compiling these data into one document for each individual disaster type.</li>
+										<li>Create an visualisation, as explained below</li>
+										<li>In our analysis, identify possible correlations between magnitude of disasters and media response. Also come up with explanations for notable fact</li>
+									</ol>
 
 								</div>
 							</div>
