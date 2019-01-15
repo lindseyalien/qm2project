@@ -1,0 +1,85 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    
+      <meta charset="utf-8">
+      <title>Bokeh Plot</title>
+      
+      
+        
+          
+        <link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" type="text/css" />
+        
+        
+          
+        <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
+        <script type="text/javascript">
+            Bokeh.set_log_level("info");
+        </script>
+        
+      
+      
+    
+  </head>
+  
+  
+  <body>
+    
+      
+        
+          
+          
+            
+              <div class="bk-root" id="e510d1aa-502b-43c7-b760-6869ea3be58a" data-root-id="2157"></div>
+            
+          
+        
+      
+      
+        <script type="application/json" id="2256">
+          {"b42ad0eb-7562-4429-af81-0363bfd12881":{"roots":{"references":[{"attributes":{"data_source":{"id":"2155","type":"ColumnDataSource"},"glyph":{"id":"2188","type":"Circle"},"hover_glyph":null,"muted_glyph":null,"nonselection_glyph":{"id":"2189","type":"Circle"},"selection_glyph":null,"view":{"id":"2191","type":"CDSView"}},"id":"2190","type":"GlyphRenderer"},{"attributes":{"source":{"id":"2155","type":"ColumnDataSource"}},"id":"2191","type":"CDSView"},{"attributes":{},"id":"2195","type":"BasicTickFormatter"},{"attributes":{},"id":"2197","type":"BasicTickFormatter"},{"attributes":{},"id":"2198","type":"Selection"},{"attributes":{},"id":"2199","type":"UnionRenderers"},{"attributes":{"plot":{"id":"2157","subtype":"Figure","type":"Plot"},"ticker":{"id":"2167","type":"BasicTicker"}},"id":"2170","type":"Grid"},{"attributes":{},"id":"2172","type":"BasicTicker"},{"attributes":{"callback":null,"data":{"Country":["Iceland","Chile","Chile","Chile","Indonesia","Ecuador","Indonesia","Indonesia","Ecuador","Indonesia"],"Lat":{"__ndarray__":"v/G1Z5bQT0C0yHa+n2pFwOxRuB6FS0TACtejcD2qRMClZDkJpa8gwESLbOf7qeW/46YGms8pHsClZDkJpa8gwEW28/3UePe/uB6F61G4H8A=","dtype":"float64","shape":[10]},"Lon":{"__ndarray__":"pHA9CtejM8CamZmZmSlSwEjhehSuB1LAZ0KTxJInUsDROT/FceBcQJZDi2znm1PAG+244XecW0DROT/FceBcQD81XrpJnFPAwMqhRbYTXEA=","dtype":"float64","shape":[10]},"affected":[100000,8000,3500,4000,133349,800000,137140,133349,130042,83158],"index":[0,1,2,3,4,5,6,7,8,9],"reaction":[100,42,22,22,22,12,14,19,15,14],"size":{"__ndarray__":"t23btm3bFkAd1EEd1EHdP5qZmZmZmck/HdRBHdRBzT/9RONM0noeQLdt27Zt20ZA3e05LqZYH0D9RONM0noeQBXm/JJQuR1AOr8kVO4BE0A=","dtype":"float64","shape":[10]}},"selected":{"id":"2198","type":"Selection"},"selection_policy":{"id":"2199","type":"UnionRenderers"}},"id":"2155","type":"ColumnDataSource"},{"attributes":{"callback":null,"tooltips":[["Where?","@Country"],["Number affected","@affected"],["Reaction amount","@reaction"]]},"id":"2156","type":"HoverTool"},{"attributes":{"below":[{"id":"2166","type":"LinearAxis"}],"left":[{"id":"2171","type":"LinearAxis"}],"plot_height":400,"plot_width":700,"renderers":[{"id":"2166","type":"LinearAxis"},{"id":"2170","type":"Grid"},{"id":"2171","type":"LinearAxis"},{"id":"2175","type":"Grid"},{"id":"2190","type":"GlyphRenderer"}],"title":{"id":"2178","type":"Title"},"toolbar":{"id":"2176","type":"Toolbar"},"x_range":{"id":"2158","type":"DataRange1d"},"x_scale":{"id":"2162","type":"LinearScale"},"y_range":{"id":"2160","type":"DataRange1d"},"y_scale":{"id":"2164","type":"LinearScale"}},"id":"2157","subtype":"Figure","type":"Plot"},{"attributes":{"active_drag":"auto","active_inspect":"auto","active_multi":null,"active_scroll":"auto","active_tap":"auto","tools":[{"id":"2156","type":"HoverTool"},{"id":"2181","type":"WheelZoomTool"},{"id":"2182","type":"ResetTool"},{"id":"2183","type":"PanTool"}]},"id":"2176","type":"Toolbar"},{"attributes":{"dimension":1,"plot":{"id":"2157","subtype":"Figure","type":"Plot"},"ticker":{"id":"2172","type":"BasicTicker"}},"id":"2175","type":"Grid"},{"attributes":{"align":"center","plot":null,"text":"Relationship between Number of People Affected and Reaction to Top 10 Volcanic activities","text_font_size":{"value":"14px"}},"id":"2178","type":"Title"},{"attributes":{"callback":null},"id":"2158","type":"DataRange1d"},{"attributes":{},"id":"2183","type":"PanTool"},{"attributes":{},"id":"2182","type":"ResetTool"},{"attributes":{},"id":"2181","type":"WheelZoomTool"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"value":"#1f77b4"},"line_alpha":{"value":0.1},"line_color":{"value":"#1f77b4"},"size":{"units":"screen","value":10},"x":{"field":"affected"},"y":{"field":"reaction"}},"id":"2189","type":"Circle"},{"attributes":{"fill_alpha":{"value":0.5},"fill_color":{"value":"navy"},"line_alpha":{"value":0.5},"line_color":{"value":"navy"},"size":{"units":"screen","value":10},"x":{"field":"affected"},"y":{"field":"reaction"}},"id":"2188","type":"Circle"},{"attributes":{"axis_label":"Reaction","formatter":{"id":"2197","type":"BasicTickFormatter"},"plot":{"id":"2157","subtype":"Figure","type":"Plot"},"ticker":{"id":"2172","type":"BasicTicker"}},"id":"2171","type":"LinearAxis"},{"attributes":{},"id":"2164","type":"LinearScale"},{"attributes":{},"id":"2167","type":"BasicTicker"},{"attributes":{"axis_label":"Number of people affected","formatter":{"id":"2195","type":"BasicTickFormatter"},"plot":{"id":"2157","subtype":"Figure","type":"Plot"},"ticker":{"id":"2167","type":"BasicTicker"}},"id":"2166","type":"LinearAxis"},{"attributes":{"callback":null},"id":"2160","type":"DataRange1d"},{"attributes":{},"id":"2162","type":"LinearScale"}],"root_ids":["2157"]},"title":"Bokeh Application","version":"1.0.4"}}
+        </script>
+        <script type="text/javascript">
+          (function() {
+            var fn = function() {
+              Bokeh.safely(function() {
+                (function(root) {
+                  function embed_document(root) {
+                    
+                  var docs_json = document.getElementById('2256').textContent;
+                  var render_items = [{"docid":"b42ad0eb-7562-4429-af81-0363bfd12881","roots":{"2157":"e510d1aa-502b-43c7-b760-6869ea3be58a"}}];
+                  root.Bokeh.embed.embed_items(docs_json, render_items);
+                
+                  }
+                  if (root.Bokeh !== undefined) {
+                    embed_document(root);
+                  } else {
+                    var attempts = 0;
+                    var timer = setInterval(function(root) {
+                      if (root.Bokeh !== undefined) {
+                        embed_document(root);
+                        clearInterval(timer);
+                      }
+                      attempts++;
+                      if (attempts > 100) {
+                        console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+                        clearInterval(timer);
+                      }
+                    }, 10, root)
+                  }
+                })(window);
+              });
+            };
+            if (document.readyState != "loading") fn();
+            else document.addEventListener("DOMContentLoaded", fn);
+          })();
+        </script>
+    
+  </body>
+  
+</html>

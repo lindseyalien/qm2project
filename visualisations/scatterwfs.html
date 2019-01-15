@@ -1,0 +1,83 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    
+      <meta charset="utf-8">
+      <title>Bokeh Plot</title>
+      
+      
+        
+          
+        <link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-0.13.0.min.css" type="text/css" />
+        
+        
+          
+        <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-0.13.0.min.js"></script>
+        <script type="text/javascript">
+            Bokeh.set_log_level("info");
+        </script>
+        
+      
+      
+    
+  </head>
+  
+  
+  <body>
+    
+      
+        
+          
+          
+            <div class="bk-root" id="c63c104d-f29f-46bb-a401-d6c8d721febd"></div>
+          
+        
+      
+      
+        <script type="application/json" id="3b99a866-100c-4433-867a-15a1a0fda84b">
+          {"031a4bf9-19bf-4571-af2d-c7ebe414be18":{"roots":{"references":[{"attributes":{"active_drag":"auto","active_inspect":"auto","active_multi":null,"active_scroll":"auto","active_tap":"auto","tools":[{"id":"adf4c47f-db52-49f2-af7f-d225c7aa3838","type":"HoverTool"},{"id":"22c880c9-b626-470a-a45f-089fff84f1ed","type":"WheelZoomTool"},{"id":"4a50d8c8-fd30-4ae0-befd-0d6fcbdf6246","type":"ResetTool"},{"id":"a120cae3-af8f-42f2-be0d-da7184761cc2","type":"PanTool"}]},"id":"9c1d0cf8-2548-4628-b3f6-0955f76ddb07","type":"Toolbar"},{"attributes":{},"id":"22c880c9-b626-470a-a45f-089fff84f1ed","type":"WheelZoomTool"},{"attributes":{"callback":null},"id":"632cbe66-e8c9-4283-8ecc-3240e4d33a44","type":"DataRange1d"},{"attributes":{},"id":"d6c8b4f0-c235-487b-806d-bcf0f0a46272","type":"BasicTickFormatter"},{"attributes":{},"id":"63693d79-f61f-4eef-95a8-91b462ff63c8","type":"Selection"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"value":"#1f77b4"},"line_alpha":{"value":0.1},"line_color":{"value":"#1f77b4"},"size":{"units":"screen","value":10},"x":{"field":"Affected"},"y":{"field":"Reaction"}},"id":"c489c7bb-5a12-4d55-bec3-3714ed29f45b","type":"Circle"},{"attributes":{},"id":"6d17c2c6-af2b-47e3-9bd4-39c1be74ada0","type":"LinearScale"},{"attributes":{"callback":null,"renderers":"auto","tooltips":[["Where?","@Country"],["Number affected","@Affected"],["Reaction amount","@Reaction"]]},"id":"adf4c47f-db52-49f2-af7f-d225c7aa3838","type":"HoverTool"},{"attributes":{"callback":null},"id":"d2d34ac4-4dc3-48a4-917e-9f5f192f926d","type":"DataRange1d"},{"attributes":{"axis_label":"Number of People Affected","formatter":{"id":"d6c8b4f0-c235-487b-806d-bcf0f0a46272","type":"BasicTickFormatter"},"plot":{"id":"0c6229af-107c-4160-8156-bd8ef921ff80","subtype":"Figure","type":"Plot"},"ticker":{"id":"bbe2c0f2-4b32-49be-8fa1-be2cdc09aca3","type":"BasicTicker"}},"id":"4f0b8c80-cf5b-4881-a407-6f12a47aa604","type":"LinearAxis"},{"attributes":{"align":"center","plot":null,"text":"Relationship between Number of People Affected and Reaction to Top 10 Wildfires","text_font_size":{"value":"15px"}},"id":"b591bf16-eb63-48aa-913c-777181ff6810","type":"Title"},{"attributes":{},"id":"a120cae3-af8f-42f2-be0d-da7184761cc2","type":"PanTool"},{"attributes":{},"id":"7689684f-45c5-4b1a-871f-5613563e173b","type":"LinearScale"},{"attributes":{},"id":"f2ea5944-5175-4224-9f23-af060e4ab902","type":"UnionRenderers"},{"attributes":{},"id":"cfda72da-f6b8-4763-b2f2-d47d6081386b","type":"BasicTicker"},{"attributes":{"axis_label":"Reaction","formatter":{"id":"0e62b075-ea7b-4c12-b6ab-bc0152f313aa","type":"BasicTickFormatter"},"plot":{"id":"0c6229af-107c-4160-8156-bd8ef921ff80","subtype":"Figure","type":"Plot"},"ticker":{"id":"cfda72da-f6b8-4763-b2f2-d47d6081386b","type":"BasicTicker"}},"id":"e6fb3b82-23cb-4a98-89d1-71ddc05225e2","type":"LinearAxis"},{"attributes":{"dimension":1,"plot":{"id":"0c6229af-107c-4160-8156-bd8ef921ff80","subtype":"Figure","type":"Plot"},"ticker":{"id":"cfda72da-f6b8-4763-b2f2-d47d6081386b","type":"BasicTicker"}},"id":"51f10088-66e9-4dcd-835e-2f56b3ffa94b","type":"Grid"},{"attributes":{"source":{"id":"5d0c5cc7-e1f8-4761-b397-f96529773fba","type":"ColumnDataSource"}},"id":"47c9f882-f128-42d9-b5af-a1c6054906d0","type":"CDSView"},{"attributes":{},"id":"4a50d8c8-fd30-4ae0-befd-0d6fcbdf6246","type":"ResetTool"},{"attributes":{"data_source":{"id":"5d0c5cc7-e1f8-4761-b397-f96529773fba","type":"ColumnDataSource"},"glyph":{"id":"7887c4f6-c800-4284-9c36-efdf5b93fcd0","type":"Circle"},"hover_glyph":null,"muted_glyph":null,"nonselection_glyph":{"id":"c489c7bb-5a12-4d55-bec3-3714ed29f45b","type":"Circle"},"selection_glyph":null,"view":{"id":"47c9f882-f128-42d9-b5af-a1c6054906d0","type":"CDSView"}},"id":"deb5acf1-1b51-49d7-b358-942888267ed5","type":"GlyphRenderer"},{"attributes":{"below":[{"id":"4f0b8c80-cf5b-4881-a407-6f12a47aa604","type":"LinearAxis"}],"left":[{"id":"e6fb3b82-23cb-4a98-89d1-71ddc05225e2","type":"LinearAxis"}],"plot_height":400,"plot_width":700,"renderers":[{"id":"4f0b8c80-cf5b-4881-a407-6f12a47aa604","type":"LinearAxis"},{"id":"5b87340a-ea81-4bf4-b9a3-81e638a6ce51","type":"Grid"},{"id":"e6fb3b82-23cb-4a98-89d1-71ddc05225e2","type":"LinearAxis"},{"id":"51f10088-66e9-4dcd-835e-2f56b3ffa94b","type":"Grid"},{"id":"deb5acf1-1b51-49d7-b358-942888267ed5","type":"GlyphRenderer"}],"title":{"id":"b591bf16-eb63-48aa-913c-777181ff6810","type":"Title"},"toolbar":{"id":"9c1d0cf8-2548-4628-b3f6-0955f76ddb07","type":"Toolbar"},"x_range":{"id":"d2d34ac4-4dc3-48a4-917e-9f5f192f926d","type":"DataRange1d"},"x_scale":{"id":"6d17c2c6-af2b-47e3-9bd4-39c1be74ada0","type":"LinearScale"},"y_range":{"id":"632cbe66-e8c9-4283-8ecc-3240e4d33a44","type":"DataRange1d"},"y_scale":{"id":"7689684f-45c5-4b1a-871f-5613563e173b","type":"LinearScale"}},"id":"0c6229af-107c-4160-8156-bd8ef921ff80","subtype":"Figure","type":"Plot"},{"attributes":{"callback":null,"data":{"Affected":[409664,88000,60137,57003,55020,43441,1038,2963,9185,1305],"Country":["Indonesia","Canada","Israel","Democratic Republic of Congo","USA","Canada","USA","USA","USA","USA"],"Lat":{"__ndarray__":"6lvmdFl8GMAUrkfhelxMQEbOwp52QD9AAAAAAAAAAACqaKz9nWNCQC0CY30D3UpAtlxHZj9wQ0DleAWiJyNBQGwkCcIVJkNAHF97ZkkcPkA=","dtype":"float64","shape":[10]},"Lon":{"__ndarray__":"HsNjP4uxWkCcoiO5/NdbwJOpglFJZUFAAAAAAAAANEAEP6phv9pdwPvMWZ9y6V/A7SpJQ7I7WsAE6zh+qM5dwH1XBP9bkl7AVBwHXi1UWMA=","dtype":"float64","shape":[10]},"Reaction":[36,78,60,75,33,100,97,89,86,81],"index":[0,1,2,3,4,5,6,7,8,9]},"selected":{"id":"63693d79-f61f-4eef-95a8-91b462ff63c8","type":"Selection"},"selection_policy":{"id":"f2ea5944-5175-4224-9f23-af060e4ab902","type":"UnionRenderers"}},"id":"5d0c5cc7-e1f8-4761-b397-f96529773fba","type":"ColumnDataSource"},{"attributes":{"plot":{"id":"0c6229af-107c-4160-8156-bd8ef921ff80","subtype":"Figure","type":"Plot"},"ticker":{"id":"bbe2c0f2-4b32-49be-8fa1-be2cdc09aca3","type":"BasicTicker"}},"id":"5b87340a-ea81-4bf4-b9a3-81e638a6ce51","type":"Grid"},{"attributes":{},"id":"bbe2c0f2-4b32-49be-8fa1-be2cdc09aca3","type":"BasicTicker"},{"attributes":{},"id":"0e62b075-ea7b-4c12-b6ab-bc0152f313aa","type":"BasicTickFormatter"},{"attributes":{"fill_alpha":{"value":0.5},"fill_color":{"value":"navy"},"line_alpha":{"value":0.5},"line_color":{"value":"navy"},"size":{"units":"screen","value":10},"x":{"field":"Affected"},"y":{"field":"Reaction"}},"id":"7887c4f6-c800-4284-9c36-efdf5b93fcd0","type":"Circle"}],"root_ids":["0c6229af-107c-4160-8156-bd8ef921ff80"]},"title":"Bokeh Application","version":"0.13.0"}}
+        </script>
+        <script type="text/javascript">
+          (function() {
+            var fn = function() {
+              Bokeh.safely(function() {
+                (function(root) {
+                  function embed_document(root) {
+                    
+                  var docs_json = document.getElementById('3b99a866-100c-4433-867a-15a1a0fda84b').textContent;
+                  var render_items = [{"docid":"031a4bf9-19bf-4571-af2d-c7ebe414be18","roots":{"0c6229af-107c-4160-8156-bd8ef921ff80":"c63c104d-f29f-46bb-a401-d6c8d721febd"}}];
+                  root.Bokeh.embed.embed_items(docs_json, render_items);
+                
+                  }
+                  if (root.Bokeh !== undefined) {
+                    embed_document(root);
+                  } else {
+                    var attempts = 0;
+                    var timer = setInterval(function(root) {
+                      if (root.Bokeh !== undefined) {
+                        embed_document(root);
+                        clearInterval(timer);
+                      }
+                      attempts++;
+                      if (attempts > 100) {
+                        console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing")
+                        clearInterval(timer);
+                      }
+                    }, 10, root)
+                  }
+                })(window);
+              });
+            };
+            if (document.readyState != "loading") fn();
+            else document.addEventListener("DOMContentLoaded", fn);
+          })();
+        </script>
+    
+  </body>
+  
+</html>

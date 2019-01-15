@@ -1,0 +1,960 @@
+
+<html>
+  <head>
+    
+<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css">
+<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css">
+<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<style>div.hololayout {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+div.holoframe {
+  width: 75%;
+}
+
+div.holowell {
+  display: flex;
+  align-items: center;
+}
+
+form.holoform {
+  background-color: #fafafa;
+  border-radius: 5px;
+  overflow: hidden;
+  padding-left: 0.8em;
+  padding-right: 0.8em;
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  border: 1px solid #e3e3e3;
+}
+
+div.holowidgets {
+  padding-right: 0;
+  width: 25%;
+}
+
+div.holoslider {
+  min-height: 0 !important;
+  height: 0.8em;
+  width: 100%;
+}
+
+div.holoformgroup {
+  padding-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+div.hologroup {
+  padding-left: 0;
+  padding-right: 0.8em;
+  width: 100%;
+}
+
+.holoselect {
+  width: 92%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.holotext {
+  padding-left:  0.5em;
+  padding-right: 0;
+  width: 100%;
+}
+
+.holowidgets .ui-resizable-se {
+  visibility: hidden
+}
+
+.holoframe > .ui-resizable-se {
+  visibility: hidden
+}
+
+.holowidgets .ui-resizable-s {
+  visibility: hidden
+}
+
+
+/* CSS rules for noUISlider based slider used by JupyterLab extension  */
+
+.noUi-handle {
+  width: 20px !important;
+  height: 20px !important;
+  left: -5px !important;
+  top: -5px !important;
+}
+
+.noUi-handle:before, .noUi-handle:after {
+  visibility: hidden;
+  height: 0px;
+}
+
+.noUi-target {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+div.bk-hbox {
+    display: flex;
+    justify-content: center;
+}
+
+div.bk-hbox div.bk-plot {
+    padding: 8px;
+}
+
+div.bk-hbox div.bk-data-table {
+    padding: 20px;
+}
+</style>
+    
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js" type="text/javascript"></script>
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js" type="text/javascript"></script>
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js" type="text/javascript"></script>
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-gl-1.0.4.min.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" type="text/javascript"></script>
+<script type="text/javascript">function HoloViewsWidget() {
+}
+
+HoloViewsWidget.prototype.init_slider = function(init_val){
+  if(this.load_json) {
+    this.from_json()
+  } else {
+    this.update_cache();
+  }
+}
+
+HoloViewsWidget.prototype.populate_cache = function(idx){
+  this.cache[idx].innerHTML = this.frames[idx];
+  if (this.embed) {
+    delete this.frames[idx];
+  }
+}
+
+HoloViewsWidget.prototype.process_error = function(msg){
+}
+
+HoloViewsWidget.prototype.from_json = function() {
+  var data_url = this.json_path + this.id + '.json';
+  $.getJSON(data_url, $.proxy(function(json_data) {
+    this.frames = json_data;
+    this.update_cache();
+    this.update(0);
+  }, this));
+}
+
+HoloViewsWidget.prototype.dynamic_update = function(current){
+  if (current === undefined) {
+    return
+  }
+  this.current = current;
+  if (this.comm) {
+    var msg = {comm_id: this.id+'_client', content: current}
+    this.comm.send(msg);
+  }
+}
+
+HoloViewsWidget.prototype.update_cache = function(force){
+  var frame_len = Object.keys(this.frames).length;
+  for (var i=0; i<frame_len; i++) {
+    if(!this.load_json || this.dynamic)  {
+      var frame = Object.keys(this.frames)[i];
+    } else {
+      var frame = i;
+    }
+    if(!(frame in this.cache) || force) {
+      if ((frame in this.cache) && force) { this.cache[frame].remove() }
+      var div = document.createElement("div");
+      var parent = document.getElementById("_anim_img"+this.id);
+      div.style.display = "none";
+      parent.appendChild(div)
+      this.cache[frame] = div;
+      var cache_id = "_anim_img"+this.id+"_"+frame;
+      this.populate_cache(frame);
+    }
+  }
+}
+
+HoloViewsWidget.prototype.update = function(current){
+  if(current in this.cache) {
+    for (var index in this.cache) {
+      this.cache[index].style.display = "none";
+    }
+    this.cache[current].style.display = "";
+    this.wait = false;
+  }
+}
+
+HoloViewsWidget.prototype.init_comms = function() {
+  var that = this
+  HoloViews.comm_manager.register_target(this.plot_id, this.id, function (msg) { that.msg_handler(msg) })
+  if (!this.cached || this.dynamic) {
+    function ack_callback(msg) {
+      var msg = msg.metadata;
+      var comm_id = msg.comm_id;
+      var comm_status = HoloViews.comm_status[comm_id];
+      if (that.queue.length > 0) {
+        that.time = Date.now();
+        that.dynamic_update(that.queue[that.queue.length-1]);
+        that.queue = [];
+      } else {
+        that.wait = false;
+      }
+      if ((msg.msg_type == "Ready") && msg.content) {
+        console.log("Python callback returned following output:", msg.content);
+      } else if (msg.msg_type == "Error") {
+        console.log("Python failed with the following traceback:", msg.traceback)
+      }
+    }
+    var comm = HoloViews.comm_manager.get_client_comm(this.plot_id, this.id+'_client', ack_callback);
+    return comm
+  }
+}
+
+HoloViewsWidget.prototype.msg_handler = function(msg) {
+  var metadata = msg.metadata;
+  if ((metadata.msg_type == "Ready")) {
+    if (metadata.content) {
+      console.log("Python callback returned following output:", metadata.content);
+    }
+	return;
+  } else if (metadata.msg_type == "Error") {
+    console.log("Python failed with the following traceback:", metadata.traceback)
+    return
+  }
+  this.process_msg(msg)
+}
+
+HoloViewsWidget.prototype.process_msg = function(msg) {
+}
+
+function SelectionWidget(frames, id, slider_ids, keyMap, dim_vals, notFound, load_json, mode, cached, json_path, dynamic, plot_id){
+  this.frames = frames;
+  this.id = id;
+  this.plot_id = plot_id;
+  this.slider_ids = slider_ids;
+  this.keyMap = keyMap
+  this.current_frame = 0;
+  this.current_vals = dim_vals;
+  this.load_json = load_json;
+  this.mode = mode;
+  this.notFound = notFound;
+  this.cached = cached;
+  this.dynamic = dynamic;
+  this.cache = {};
+  this.json_path = json_path;
+  this.init_slider(this.current_vals[0]);
+  this.queue = [];
+  this.wait = false;
+  if (!this.cached || this.dynamic) {
+    this.comm = this.init_comms();
+  }
+}
+
+SelectionWidget.prototype = new HoloViewsWidget;
+
+
+SelectionWidget.prototype.get_key = function(current_vals) {
+  var key = "(";
+  for (var i=0; i<this.slider_ids.length; i++)
+  {
+    var val = this.current_vals[i];
+    if (!(typeof val === 'string')) {
+      if (val % 1 === 0) { val = val.toFixed(1); }
+      else { val = val.toFixed(10); val = val.slice(0, val.length-1);}
+    }
+    key += "'" + val + "'";
+    if(i != this.slider_ids.length-1) { key += ', ';}
+    else if(this.slider_ids.length == 1) { key += ',';}
+  }
+  key += ")";
+  return this.keyMap[key];
+}
+
+SelectionWidget.prototype.set_frame = function(dim_val, dim_idx){
+  this.current_vals[dim_idx] = dim_val;
+  var key = this.current_vals;
+  if (!this.dynamic) {
+    key = this.get_key(key)
+  }
+  if (this.dynamic || !this.cached) {
+    if ((this.time !== undefined) && ((this.wait) && ((this.time + 10000) > Date.now()))) {
+      this.queue.push(key);
+      return
+    }
+    this.queue = [];
+    this.time = Date.now();
+    this.current_frame = key;
+    this.wait = true;
+    this.dynamic_update(key)
+  } else if (key !== undefined) {
+    this.update(key)
+  }
+}
+
+
+/* Define the ScrubberWidget class */
+function ScrubberWidget(frames, num_frames, id, interval, load_json, mode, cached, json_path, dynamic, plot_id){
+  this.slider_id = "_anim_slider" + id;
+  this.loop_select_id = "_anim_loop_select" + id;
+  this.id = id;
+  this.plot_id = plot_id;
+  this.interval = interval;
+  this.current_frame = 0;
+  this.direction = 0;
+  this.dynamic = dynamic;
+  this.timer = null;
+  this.load_json = load_json;
+  this.mode = mode;
+  this.cached = cached;
+  this.frames = frames;
+  this.cache = {};
+  this.length = num_frames;
+  this.json_path = json_path;
+  document.getElementById(this.slider_id).max = this.length - 1;
+  this.init_slider(0);
+  this.wait = false;
+  this.queue = [];
+  if (!this.cached || this.dynamic) {
+    this.comm = this.init_comms()
+  }
+}
+
+ScrubberWidget.prototype = new HoloViewsWidget;
+
+ScrubberWidget.prototype.set_frame = function(frame){
+  this.current_frame = frame;
+  var widget = document.getElementById(this.slider_id);
+  if (widget === null) {
+    this.pause_animation();
+    return
+  }
+  widget.value = this.current_frame;
+  if (this.dynamic || !this.cached) {
+    if ((this.time !== undefined) && ((this.wait) && ((this.time + 10000) > Date.now()))) {
+      this.queue.push(frame);
+      return
+    }
+    this.queue = [];
+    this.time = Date.now();
+    this.wait = true;
+    this.dynamic_update(frame)
+  } else {
+    this.update(frame)
+  }
+}
+
+ScrubberWidget.prototype.get_loop_state = function(){
+  var button_group = document[this.loop_select_id].state;
+  for (var i = 0; i < button_group.length; i++) {
+    var button = button_group[i];
+    if (button.checked) {
+      return button.value;
+    }
+  }
+  return undefined;
+}
+
+
+ScrubberWidget.prototype.next_frame = function() {
+  this.set_frame(Math.min(this.length - 1, this.current_frame + 1));
+}
+
+ScrubberWidget.prototype.previous_frame = function() {
+  this.set_frame(Math.max(0, this.current_frame - 1));
+}
+
+ScrubberWidget.prototype.first_frame = function() {
+  this.set_frame(0);
+}
+
+ScrubberWidget.prototype.last_frame = function() {
+  this.set_frame(this.length - 1);
+}
+
+ScrubberWidget.prototype.slower = function() {
+  this.interval /= 0.7;
+  if(this.direction > 0){this.play_animation();}
+  else if(this.direction < 0){this.reverse_animation();}
+}
+
+ScrubberWidget.prototype.faster = function() {
+  this.interval *= 0.7;
+  if(this.direction > 0){this.play_animation();}
+  else if(this.direction < 0){this.reverse_animation();}
+}
+
+ScrubberWidget.prototype.anim_step_forward = function() {
+  if(this.current_frame < this.length - 1){
+    this.next_frame();
+  }else{
+    var loop_state = this.get_loop_state();
+    if(loop_state == "loop"){
+      this.first_frame();
+    }else if(loop_state == "reflect"){
+      this.last_frame();
+      this.reverse_animation();
+    }else{
+      this.pause_animation();
+      this.last_frame();
+    }
+  }
+}
+
+ScrubberWidget.prototype.anim_step_reverse = function() {
+  if(this.current_frame > 0){
+    this.previous_frame();
+  } else {
+    var loop_state = this.get_loop_state();
+    if(loop_state == "loop"){
+      this.last_frame();
+    }else if(loop_state == "reflect"){
+      this.first_frame();
+      this.play_animation();
+    }else{
+      this.pause_animation();
+      this.first_frame();
+    }
+  }
+}
+
+ScrubberWidget.prototype.pause_animation = function() {
+  this.direction = 0;
+  if (this.timer){
+    clearInterval(this.timer);
+    this.timer = null;
+  }
+}
+
+ScrubberWidget.prototype.play_animation = function() {
+  this.pause_animation();
+  this.direction = 1;
+  var t = this;
+  if (!this.timer) this.timer = setInterval(function(){t.anim_step_forward();}, this.interval);
+}
+
+ScrubberWidget.prototype.reverse_animation = function() {
+  this.pause_animation();
+  this.direction = -1;
+  var t = this;
+  if (!this.timer) this.timer = setInterval(function(){t.anim_step_reverse();}, this.interval);
+}
+
+function extend(destination, source) {
+  for (var k in source) {
+    if (source.hasOwnProperty(k)) {
+      destination[k] = source[k];
+    }
+  }
+  return destination;
+}
+
+function update_widget(widget, values) {
+  if (widget.hasClass("ui-slider")) {
+    widget.slider('option', {
+      min: 0,
+      max: values.length-1,
+      dim_vals: values,
+      value: 0,
+      dim_labels: values
+    })
+    widget.slider('option', 'slide').call(widget, event, {value: 0})
+  } else {
+    widget.empty();
+    for (var i=0; i<values.length; i++){
+      widget.append($("<option>", {
+        value: i,
+        text: values[i]
+      }))
+    };
+    widget.data('values', values);
+    widget.data('value', 0);
+    widget.trigger("change");
+  };
+}
+
+function init_slider(id, plot_id, dim, values, next_vals, labels, dynamic, step, value, next_dim,
+                     dim_idx, delay, jQueryUI_CDN, UNDERSCORE_CDN) {
+  // Slider JS Block START
+  function loadcssfile(filename){
+    var fileref=document.createElement("link")
+    fileref.setAttribute("rel", "stylesheet")
+    fileref.setAttribute("type", "text/css")
+    fileref.setAttribute("href", filename)
+    document.getElementsByTagName("head")[0].appendChild(fileref)
+  }
+  loadcssfile("https://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css");
+  /* Check if jQuery and jQueryUI have been loaded
+     otherwise load with require.js */
+  var jQuery = window.jQuery,
+    // check for old versions of jQuery
+    oldjQuery = jQuery && !!jQuery.fn.jquery.match(/^1\.[0-4](\.|$)/),
+    jquery_path = '',
+    paths = {},
+    noConflict;
+  var jQueryUI = jQuery.ui;
+  // check for jQuery
+  if (!jQuery || oldjQuery) {
+    // load if it's not available or doesn't meet min standards
+    paths.jQuery = jQuery;
+    noConflict = !!oldjQuery;
+  } else {
+    // register the current jQuery
+    define('jquery', [], function() { return jQuery; });
+  }
+  if (!jQueryUI) {
+    paths.jQueryUI = jQueryUI_CDN.slice(null, -3);
+  } else {
+    define('jQueryUI', [], function() { return jQuery.ui; });
+  }
+  paths.underscore = UNDERSCORE_CDN.slice(null, -3);
+  var jquery_require = {
+    paths: paths,
+    shim: {
+      "jQueryUI": {
+        exports:"$",
+        deps: ['jquery']
+      },
+      "underscore": {
+        exports: '_'
+      }
+    }
+  }
+  require.config(jquery_require);
+  require(["jQueryUI", "underscore"], function(jUI, _){
+    if (noConflict) $.noConflict(true);
+    var vals = values;
+    if (dynamic && vals.constructor === Array) {
+      var default_value = parseFloat(value);
+      var min = parseFloat(vals[0]);
+      var max = parseFloat(vals[vals.length-1]);
+      var wstep = step;
+      var wlabels = [default_value];
+      var init_label = default_value;
+    } else {
+      var min = 0;
+      if (dynamic) {
+        var max = Object.keys(vals).length - 1;
+        var init_label = labels[value];
+        var default_value = values[value];
+      } else {
+        var max = vals.length - 1;
+        var init_label = labels[value];
+        var default_value = value;
+      }
+      var wstep = 1;
+      var wlabels = labels;
+    }
+    function adjustFontSize(text) {
+      var width_ratio = (text.parent().width()/8)/text.val().length;
+      var size = Math.min(0.9, Math.max(0.6, width_ratio))+'em';
+      text.css('font-size', size);
+    }
+    var slider = $('#_anim_widget'+id+'_'+dim);
+    slider.slider({
+      animate: "fast",
+      min: min,
+      max: max,
+      step: wstep,
+      value: default_value,
+      dim_vals: vals,
+      dim_labels: wlabels,
+      next_vals: next_vals,
+      slide: function(event, ui) {
+        var vals = slider.slider("option", "dim_vals");
+        var next_vals = slider.slider("option", "next_vals");
+        var dlabels = slider.slider("option", "dim_labels");
+        if (dynamic) {
+          var dim_val = ui.value;
+          if (vals.constructor === Array) {
+            var label = ui.value;
+          } else {
+            var label = dlabels[ui.value];
+          }
+        } else {
+          var dim_val = vals[ui.value];
+          var label = dlabels[ui.value];
+        }
+        var text = $('#textInput'+id+'_'+dim);
+        text.val(label);
+        adjustFontSize(text);
+        HoloViews.index[plot_id].set_frame(dim_val, dim_idx);
+        if (Object.keys(next_vals).length > 0) {
+          var new_vals = next_vals[dim_val];
+          var next_widget = $('#_anim_widget'+id+'_'+next_dim);
+          update_widget(next_widget, new_vals);
+        }
+      }
+    });
+    slider.keypress(function(event) {
+      if (event.which == 80 || event.which == 112) {
+        var start = slider.slider("option", "value");
+        var stop =  slider.slider("option", "max");
+        for (var i=start; i<=stop; i++) {
+          var delay = i*delay;
+          $.proxy(function doSetTimeout(i) { setTimeout($.proxy(function() {
+            var val = {value:i};
+            slider.slider('value',i);
+            slider.slider("option", "slide")(null, val);
+          }, slider), delay);}, slider)(i);
+        }
+      }
+      if (event.which == 82 || event.which == 114) {
+        var start = slider.slider("option", "value");
+        var stop =  slider.slider("option", "min");
+        var count = 0;
+        for (var i=start; i>=stop; i--) {
+          var delay = count*delay;
+          count = count + 1;
+          $.proxy(function doSetTimeout(i) { setTimeout($.proxy(function() {
+            var val = {value:i};
+            slider.slider('value',i);
+            slider.slider("option", "slide")(null, val);
+          }, slider), delay);}, slider)(i);
+        }
+      }
+    });
+    var textInput = $('#textInput'+id+'_'+dim)
+    textInput.val(init_label);
+    adjustFontSize(textInput);
+  });
+}
+
+function init_dropdown(id, plot_id, dim, vals, value, next_vals, labels, next_dim, dim_idx, dynamic) {
+  var widget = $("#_anim_widget"+id+'_'+dim);
+  widget.data('values', vals)
+  for (var i=0; i<vals.length; i++){
+    if (dynamic) {
+      var val = vals[i];
+    } else {
+      var val = i;
+    }
+    widget.append($("<option>", {
+      value: val,
+      text: labels[i]
+    }));
+  };
+  widget.data("next_vals", next_vals);
+  widget.val(value);
+  widget.on('change', function(event, ui) {
+    if (dynamic) {
+      var dim_val = parseInt(this.value);
+    } else {
+      var dim_val = $.data(this, 'values')[this.value];
+    }
+    var next_vals = $.data(this, "next_vals");
+    if (Object.keys(next_vals).length > 0) {
+      var new_vals = next_vals[dim_val];
+      var next_widget = $('#_anim_widget'+id+'_'+next_dim);
+      update_widget(next_widget, new_vals);
+    }
+    var widgets = HoloViews.index[plot_id]
+    if (widgets) {
+      widgets.set_frame(dim_val, dim_idx);
+    }
+  });
+}
+
+
+if (window.HoloViews === undefined) {
+  window.HoloViews = {}
+  window.PyViz = window.HoloViews
+} else if (window.PyViz === undefined) {
+  window.PyViz = window.HoloViews
+}
+
+
+var _namespace = {
+  init_slider: init_slider,
+  init_dropdown: init_dropdown,
+  comms: {},
+  comm_status: {},
+  index: {},
+  plot_index: {},
+  kernels: {},
+  receivers: {}
+}
+
+for (var k in _namespace) {
+  if (!(k in window.HoloViews)) {
+    window.HoloViews[k] = _namespace[k];
+  }
+}
+
+// Define Bokeh specific subclasses
+function BokehSelectionWidget() {
+  SelectionWidget.apply(this, arguments);
+}
+
+function BokehScrubberWidget() {
+  ScrubberWidget.apply(this, arguments);
+}
+
+// Let them inherit from the baseclasses
+BokehSelectionWidget.prototype = Object.create(SelectionWidget.prototype);
+BokehScrubberWidget.prototype = Object.create(ScrubberWidget.prototype);
+
+// Define methods to override on widgets
+var BokehMethods = {
+  update_cache : function(){
+    for (var index in this.frames) {
+      this.frames[index] = JSON.parse(this.frames[index]);
+    }
+  },
+  update : function(current){
+    if (current === undefined) {
+      return;
+    }
+    var data = this.frames[current];
+    if (data !== undefined) {
+      if (data.root in HoloViews.plot_index) {
+        var doc = HoloViews.plot_index[data.root].model.document;
+      } else {
+        var doc = Bokeh.index[data.root].model.document;
+      }
+      doc.apply_json_patch(data.content);
+    }
+  },
+  init_comms: function() {
+    if (Bokeh.protocol !== undefined) {
+      this.receiver = new Bokeh.protocol.Receiver()
+    } else {
+      this.receiver = null;
+    }
+    return HoloViewsWidget.prototype.init_comms.call(this);
+  },
+  process_msg : function(msg) {
+    if (this.plot_id in HoloViews.plot_index) {
+      var doc = HoloViews.plot_index[this.plot_id].model.document;
+    } else {
+      var doc = Bokeh.index[this.plot_id].model.document;
+    }
+    if (this.receiver === null) { return }
+    var receiver = this.receiver;
+    if (msg.buffers.length > 0) {
+      receiver.consume(msg.buffers[0].buffer)
+    } else {
+      receiver.consume(msg.content.data)
+    }
+    const comm_msg = receiver.message;
+    if ((comm_msg != null) && (doc != null)) {
+      doc.apply_json_patch(comm_msg.content, comm_msg.buffers)
+    }
+  }
+}
+
+// Extend Bokeh widgets with backend specific methods
+extend(BokehSelectionWidget.prototype, BokehMethods);
+extend(BokehScrubberWidget.prototype, BokehMethods);
+
+window.HoloViews.BokehSelectionWidget = BokehSelectionWidget
+window.HoloViews.BokehScrubberWidget = BokehScrubberWidget
+
+// Define MPL specific subclasses
+function MPLSelectionWidget() {
+  SelectionWidget.apply(this, arguments);
+}
+
+function MPLScrubberWidget() {
+  ScrubberWidget.apply(this, arguments);
+}
+
+// Let them inherit from the baseclasses
+MPLSelectionWidget.prototype = Object.create(SelectionWidget.prototype);
+MPLScrubberWidget.prototype = Object.create(ScrubberWidget.prototype);
+
+// Define methods to override on widgets
+var MPLMethods = {
+  init_slider : function(init_val){
+    if(this.load_json) {
+      this.from_json()
+    } else {
+      this.update_cache();
+    }
+    if (this.dynamic | !this.cached | (this.current_vals === undefined)) {
+      this.update(0)
+    } else {
+      this.set_frame(this.current_vals[0], 0)
+    }
+  },
+  process_msg : function(msg) {
+    var data = msg.content.data;
+    this.frames[this.current] = data;
+    this.update_cache(true);
+    this.update(this.current);
+  }
+}
+// Extend MPL widgets with backend specific methods
+extend(MPLSelectionWidget.prototype, MPLMethods);
+extend(MPLScrubberWidget.prototype, MPLMethods);
+
+window.HoloViews.MPLSelectionWidget = MPLSelectionWidget
+window.HoloViews.MPLScrubberWidget = MPLScrubberWidget
+</script>
+<script type="text/javascript">
+    function JupyterCommManager() {
+    }
+
+    JupyterCommManager.prototype.register_target = function(plot_id, comm_id, msg_handler) {
+      if (window.comm_manager || ((window.Jupyter !== undefined) && (Jupyter.notebook.kernel != null))) {
+        var comm_manager = window.comm_manager || Jupyter.notebook.kernel.comm_manager;
+        comm_manager.register_target(comm_id, function(comm) {
+          comm.on_msg(msg_handler);
+        });
+      } else if ((plot_id in window.PyViz.kernels) && (window.PyViz.kernels[plot_id])) {
+        window.PyViz.kernels[plot_id].registerCommTarget(comm_id, function(comm) {
+          comm.onMsg = msg_handler;
+        });
+      }
+    }
+
+    JupyterCommManager.prototype.get_client_comm = function(plot_id, comm_id, msg_handler) {
+      if (comm_id in window.PyViz.comms) {
+        return window.PyViz.comms[comm_id];
+      } else if (window.comm_manager || ((window.Jupyter !== undefined) && (Jupyter.notebook.kernel != null))) {
+        var comm_manager = window.comm_manager || Jupyter.notebook.kernel.comm_manager;
+        var comm = comm_manager.new_comm(comm_id, {}, {}, {}, comm_id);
+        if (msg_handler) {
+          comm.on_msg(msg_handler);
+        }
+      } else if ((plot_id in window.PyViz.kernels) && (window.PyViz.kernels[plot_id])) {
+        var comm = window.PyViz.kernels[plot_id].connectToComm(comm_id);
+        comm.open();
+        if (msg_handler) {
+          comm.onMsg = msg_handler;
+        }
+      }
+
+      window.PyViz.comms[comm_id] = comm;
+      return comm;
+    }
+
+    window.PyViz.comm_manager = new JupyterCommManager();
+    </script>
+  </head>
+  <body>
+    <div class="hololayout row row-fluid">
+  <div class="holoframe" id="display_area5ba8438f17354ce4b025a40a467331e9">
+    <div id="_anim_img5ba8438f17354ce4b025a40a467331e9">
+      
+      <div id='2725' style='display: table; margin: 0 auto;'>
+
+
+
+
+
+  <div class="bk-root" id="97055447-900b-4207-bbeb-4430b3f8891a" data-root-id="2725"></div>
+</div>
+      
+    </div>
+  </div>
+  <div class="holowidgets" id="widget_area5ba8438f17354ce4b025a40a467331e9">
+    <form class="holoform well" id="form5ba8438f17354ce4b025a40a467331e9">
+      
+      
+      <div class="form-group control-group holoformgroup" style=''>
+        <label for="textInput5ba8438f17354ce4b025a40a467331e9_Year">
+          <strong>Year:</strong>
+        </label>
+        <div class="holowell">
+          <div class="hologroup">
+            <input type="text" class="holotext form-control input-small"
+                   id="textInput5ba8438f17354ce4b025a40a467331e9_Year" value="" readonly>
+          </div>
+          <div class="holoslider"
+               id="_anim_widget5ba8438f17354ce4b025a40a467331e9_Year"></div>
+        </div>
+      </div>
+      
+        
+        </form>
+    </div>
+</div>
+<script type="text/javascript">/* Instantiate the BokehSelectionWidget class. */
+/* The IDs given should match those used in the template above. */
+var widget_ids = new Array(1);
+
+
+widget_ids[0] = "_anim_widget5ba8438f17354ce4b025a40a467331e9_Year";
+
+
+function create_widget() {
+  var frame_data = {"0": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFJAAAAAAAAAUUAAAAAAAABRQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAgERAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAIBCQAAAAAAAgEJAAAAAAAAA+H8AAAAAAABBQAAAAAAAAPh/AAAAAAAA+H8AAAAAAABBQAAAAAAAAD9AAAAAAAAAP0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAAO0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA4QAAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA0QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAxQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACpAAAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAkQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAkQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACRAAAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAAhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2008\"},{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFJAAAAAAAAAUUAAAAAAAABRQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAgERAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAIBCQAAAAAAAgEJAAAAAAAAA+H8AAAAAAABBQAAAAAAAAPh/AAAAAAAA+H8AAAAAAABBQAAAAAAAAD9AAAAAAAAAP0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAAO0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA4QAAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA0QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAxQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACpAAAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAkQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAkQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACRAAAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAAhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"elHDxDbaPEHexZTBLHA6wS6RSTvXozBBM6wBhQgKNkH9vE1eH/k1weIJFQ5+bwZB2UxzzFhpQsGoe9FyFqk3QRvPNWtDPFDBH/sCA80nO0GFIYKo0HZCwS9Qiy1ygTpBE4ldd3rjCMFW8B/WSFJIQRj4oO/WsD9BVnVGORR8P0FE7oTdMn8lwQzhAW7B1z9B3yj7vE92MMEvvp76WJk3wXJ6eEIaiCBBY2R+zfkcLUHw+5qRqbFRwbziaxWbpT1B4ejd6zR8P0HnDHnNSkk/Qe7gE1I4t0JBcaoFW//RSEFf5wqWN05LQRzjZ6XiqkRB2wjcWJbvUUGI+nnXyeU9QfbJ/jiNEFPB5o3t+DtqQEF7938qWn1EwaplmWmhPE3BPvgFEcPYHkGl//6yjP00QTo8+COEIDpByf3jwG6mGkFXdw0XECRAwVwKEhuknDZB32EXIN0WH0F7LrOfr5ZOQaY3J7baWi/BRvnd2DElOUF9RVb2igw3QbkM+tBbKULB5cJsTJBwNUFiaIw2QmBHwfEgtMzBCE1Bh4RTUKzyNEHqnXEUN6hBwTnujDY6FzpB2yQKB5cyRsHIZRmnJVlKwUdus6Wj0FRBUy60tuCEPsF3249bqApEwZcI9amP1B/Bhax3VrtHS8FPdM6SEhspQZOp0AtkTT1BxBOcKu9FRkFDsMf1oo88wXM9krbWTmJBrDMGdcqsTkHb4Vtol786QTN/pTLKhiFBIfl1oXDkOEEr2jpsHedAQZxfM2lOO0DBBsWh8tLX9cA59iOd34BMQbYldy8aO1JBT3d1vqYOSkF1jW2kvCYzwcMrObqSJFZBPpJlJrZkLUFiwTurlcIvQS0tTIWHc/XAEVPl7qbuXEFATZ2f7E47Qfg04ln7A1ZBCO/B6evRUkEHB6MGECtJQbd+Fk35XwJB9g9EbQBfCsHvvBNMsLNUQbt4PdCnbjjBe9xdxL8IXUHnTwL8TZ1TQY/wPGEeOWBBZayNB8IyR0HanQoyXblCQZZlTGYfUz5BGSONsUUAVEHdv0ukWTxTQeitnTBY2WBBg73m4yZ9pMDnXDEzQYJdQeE9qRRuX1BBfqUFfMDQRkHLyajtkTBWQd9xucU9My9BYwPm9+qpAkFkbOPHut9eQZBlAjnz8U1BfgKDA+CNVkG61ge0ZA1SQetAI+qeJFtBpLgCmOXCS0H6WErqHZ9OQZ/QhfmI4llBI0V7eC2iHEFjxxAXaoZDQervBwm31CpBJ841lSPhQUETiNw1cHZDwQ0DnLR5QUJBAePk3mQTYEEjmaLCx15ZQZsHXuWd5kRBpj7rWqG3NsHGPYgtmYlXQWPKpxCBNVxBUW/NdtzsWEHMmO3UR+5aQZjHm98huVdBE1EnaAJ4WEENoJD3278aQQDjJANrhDVBT2OMHToVK0FyREy7KOZPQVbvgb+1xRVBqTUAZGKDUEEWk2C+fv1WQb80r31lVVNB8YGiXAAcVEHhnh3wOaRSQT/G64wngVVBdd0b1UYZS0HbJHHJaHRAwfLadmu/xFZBEpeW5kXeU0HWervtTsVWQeHRpGj2OjRBlWmABseoR0FmrDaRRRhUQdNntK7qlFZBjWj37OdOV0FRkOfU2YE2wfYfUt31V0NB7Rc+KbWZUkGl9dDr7/1RQf7ez/vetkRBovFj97/7LkGlnEm6WXpQQSpnnUz63GBB31M3qkBVUEG/evDM19tUQRmiTh76NFNBbaEaBoZq7MCzMMwFYIImQaDcB7TG6RbBpqOQ6sp+OMG0pR8Mt99owV4iow5iHljBYzNW1F/uFsFxkPECx6hbwZWT8d+jijtBwom3I2jYMcHa3LyLFjVFQfSzawFTPVhBw+2j0aP6MEGkhVvddTE0QWLYdTy2N2ZB3F5r4+WFW0E4G3YC4JclwYAUGHZnE1hB8tWzUyPiJUEKZKw4NstJweUkoH1hfUDB0sUlCqypRcFMuetueZopQeJ1Q1fk2CxB+klyWx2TOkFOoBKdzZYuwac/cMDF/lFBJ1GKwc1ELsEClog6+TYoweM4qfPToVNBNo1B0JgIVEE=\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fxBIF4CUNlVASehbQJOdVEBJ6FtAk51UQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4f2D/A+D/AVBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H9I0zyg72lOQEjTPKDvaU5AAAAAAAAA+H+KjCBRnidNQAAAAAAAAPh/AAAAAAAA+H+KjCBRnidNQDTywga91ktANPLCBr3WS0AAAAAAAAD4fwAAAAAAAPh/4MfSORP7SUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H96aQuZsX5IQAAAAAAAAPh/0vF9glVcRkAAAAAAAAD4fwAAAAAAAPh/0vF9glVcRkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H/S8X2CVVxGQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H9J6FtAk51EQAAAAAAAAPh/ONi8ChsHQkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fzjYvAobB0JAONi8ChsHQkAAAAAAAAD4fwAAAAAAAPh/ONi8ChsHQkA42LwKGwdCQAAAAAAAAPh/ONi8ChsHQkA42LwKGwdCQAAAAAAAAPh/ONi8ChsHQkAn8pBJbp8/QCfykElunz9AJ/KQSW6fP0AAAAAAAAD4fwAAAAAAAPh/J/KQSW6fP0An8pBJbp8/QCfykElunz9AJ/KQSW6fP0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8n8pBJbp8/QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fyfykElunz9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8n8pBJbp8/QCfykElunz9AAAAAAAAA+H8n8pBJbp8/QAAAAAAAAPh/emkLmbF+OEB6aQuZsX44QHppC5mxfjhAAAAAAAAA+H96aQuZsX44QHppC5mxfjhAAAAAAAAA+H96aQuZsX44QHppC5mxfjhAemkLmbF+OEB6aQuZsX44QAAAAAAAAPh/emkLmbF+OEB6aQuZsX44QHppC5mxfjhAemkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H96aQuZsX44QHppC5mxfjhAAAAAAAAA+H96aQuZsX44QAAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4f+svN9EMUjFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H/rLzfRDFIxQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]}}}],\"references\":[]},\"root\":\"2725\"}", "1": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAMBVQAAAAAAAgEJAAAAAAADAUkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAASUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAACARUAAAAAAAAAyQAAAAAAAAPh/AAAAAACAQkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAP0AAAAAAAAA/QAAAAAAAAD9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAD9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMkAAAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAOUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAyQAAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAChAAAAAAAAAKEAAAAAAAAAoQAAAAAAAAChAAAAAAAAAKEAAAAAAAAD4fwAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAChAAAAAAAAAKEAAAAAAAAAoQAAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAKEAAAAAAAAAoQAAAAAAAAPh/AAAAAAAAKEAAAAAAAAD4fwAAAAAAABhAAAAAAAAAGEAAAAAAAAAoQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAAoQAAAAAAAADJAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAAoQAAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAYQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H+fB7jIhVFXQEjTPKDvaU5A5fuEBZCmVUAAAAAAAAD4fwAAAAAAAPh/uGYTwHutUUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/3IRSusJkUEAQSBeAlDZFQAAAAAAAAPh/SNM8oO9pTkAAAAAAAAD4fwAAAAAAAPh/NPLCBr3WS0A08sIGvdZLQDTywga91ktAAAAAAAAA+H8AAAAAAAD4fzTywga91ktAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/EEgXgJQ2RUAAAAAAAAD4fxBIF4CUNkVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAASUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/EEgXgJQ2RUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8QSBeAlDZFQOsvN9EMUkFAAAAAAAAA+H8AAAAAAAD4fxBIF4CUNkVAAAAAAAAA+H8AAAAAAAD4f+svN9EMUkFA6y830QxSQUDrLzfRDFJBQOsvN9EMUkFA6y830QxSQUAAAAAAAAD4f+svN9EMUkFAAAAAAAAA+H8AAAAAAAD4f+svN9EMUkFA6y830QxSQUDrLzfRDFJBQOsvN9EMUkFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H/rLzfRDFJBQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/6y830QxSQUDrLzfRDFJBQAAAAAAAAPh/6y830QxSQUAAAAAAAAD4f3ppC5mxfjhAemkLmbF+OEDrLzfRDFJBQAAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/emkLmbF+OEDrLzfRDFJBQBBIF4CUNkVAAAAAAAAA+H96aQuZsX44QHppC5mxfjhAemkLmbF+OEDrLzfRDFJBQOsvN9EMUkFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/emkLmbF+OEB6aQuZsX44QAAAAAAAAPh/emkLmbF+OEAAAAAAAAD4f3ppC5mxfjhAAAAAAAAA+H8AAAAAAAD4f3ppC5mxfjhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H96aQuZsX44QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4f3ppC5mxfjhAemkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2009\"}],\"references\":[]},\"root\":\"2725\"}", "2": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAEBUQAAAAAAAAD9AAAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAACATUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAP0AAAAAAAAAqQAAAAAAAAPh/AAAAAAAAPUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAP0AAAAAAAAD4fwAAAAAAADlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAD9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMkAAAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAOUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAO0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAwFdAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAyQAAAAAAAADlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADJAAAAAAAAANkAAAAAAAAAmQAAAAAAAADJAAAAAAAAANkAAAAAAAAD4fwAAAAAAADRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACZAAAAAAAAANkAAAAAAAAA2QAAAAAAAADtAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA7QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAAyQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAPUAAAAAAAAAyQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAyQAAAAAAAAC5AAAAAAAAAJkAAAAAAAAAuQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAANEAAAAAAAAAyQAAAAAAAACZAAAAAAAAA+H8AAAAAAAAyQAAAAAAAACpAAAAAAAAANEAAAAAAAABDQAAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAIkAAAAAAAAA0QAAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAACZAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAYQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACpAAAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"elHDxDbaPEHexZTBLHA6wS6RSTvXozBBM6wBhQgKNkH9vE1eH/k1weIJFQ5+bwZB2UxzzFhpQsGoe9FyFqk3QRvPNWtDPFDBH/sCA80nO0GFIYKo0HZCwS9Qiy1ygTpBE4ldd3rjCMFW8B/WSFJIQRj4oO/WsD9BVnVGORR8P0FE7oTdMn8lwQzhAW7B1z9B3yj7vE92MMEvvp76WJk3wXJ6eEIaiCBBY2R+zfkcLUHw+5qRqbFRwbziaxWbpT1B4ejd6zR8P0HnDHnNSkk/Qe7gE1I4t0JBcaoFW//RSEFf5wqWN05LQRzjZ6XiqkRB2wjcWJbvUUGI+nnXyeU9QfbJ/jiNEFPB5o3t+DtqQEF7938qWn1EwaplmWmhPE3BPvgFEcPYHkGl//6yjP00QTo8+COEIDpByf3jwG6mGkFXdw0XECRAwVwKEhuknDZB32EXIN0WH0F7LrOfr5ZOQaY3J7baWi/BRvnd2DElOUF9RVb2igw3QbkM+tBbKULB5cJsTJBwNUFiaIw2QmBHwfEgtMzBCE1Bh4RTUKzyNEHqnXEUN6hBwTnujDY6FzpB2yQKB5cyRsHIZRmnJVlKwUdus6Wj0FRBUy60tuCEPsF3249bqApEwZcI9amP1B/Bhax3VrtHS8FPdM6SEhspQZOp0AtkTT1BxBOcKu9FRkFDsMf1oo88wXM9krbWTmJBrDMGdcqsTkHb4Vtol786QTN/pTLKhiFBIfl1oXDkOEEr2jpsHedAQZxfM2lOO0DBBsWh8tLX9cA59iOd34BMQbYldy8aO1JBT3d1vqYOSkF1jW2kvCYzwcMrObqSJFZBPpJlJrZkLUFiwTurlcIvQS0tTIWHc/XAEVPl7qbuXEFATZ2f7E47Qfg04ln7A1ZBCO/B6evRUkEHB6MGECtJQbd+Fk35XwJB9g9EbQBfCsHvvBNMsLNUQbt4PdCnbjjBe9xdxL8IXUHnTwL8TZ1TQY/wPGEeOWBBZayNB8IyR0HanQoyXblCQZZlTGYfUz5BGSONsUUAVEHdv0ukWTxTQeitnTBY2WBBg73m4yZ9pMDnXDEzQYJdQeE9qRRuX1BBfqUFfMDQRkHLyajtkTBWQd9xucU9My9BYwPm9+qpAkFkbOPHut9eQZBlAjnz8U1BfgKDA+CNVkG61ge0ZA1SQetAI+qeJFtBpLgCmOXCS0H6WErqHZ9OQZ/QhfmI4llBI0V7eC2iHEFjxxAXaoZDQervBwm31CpBJ841lSPhQUETiNw1cHZDwQ0DnLR5QUJBAePk3mQTYEEjmaLCx15ZQZsHXuWd5kRBpj7rWqG3NsHGPYgtmYlXQWPKpxCBNVxBUW/NdtzsWEHMmO3UR+5aQZjHm98huVdBE1EnaAJ4WEENoJD3278aQQDjJANrhDVBT2OMHToVK0FyREy7KOZPQVbvgb+1xRVBqTUAZGKDUEEWk2C+fv1WQb80r31lVVNB8YGiXAAcVEHhnh3wOaRSQT/G64wngVVBdd0b1UYZS0HbJHHJaHRAwfLadmu/xFZBEpeW5kXeU0HWervtTsVWQeHRpGj2OjRBlWmABseoR0FmrDaRRRhUQdNntK7qlFZBjWj37OdOV0FRkOfU2YE2wfYfUt31V0NB7Rc+KbWZUkGl9dDr7/1RQf7ez/vetkRBovFj97/7LkGlnEm6WXpQQSpnnUz63GBB31M3qkBVUEG/evDM19tUQRmiTh76NFNBbaEaBoZq7MCzMMwFYIImQaDcB7TG6RbBpqOQ6sp+OMG0pR8Mt99owV4iow5iHljBYzNW1F/uFsFxkPECx6hbwZWT8d+jijtBwom3I2jYMcHa3LyLFjVFQfSzawFTPVhBw+2j0aP6MEGkhVvddTE0QWLYdTy2N2ZB3F5r4+WFW0E4G3YC4JclwYAUGHZnE1hB8tWzUyPiJUEKZKw4NstJweUkoH1hfUDB0sUlCqypRcFMuetueZopQeJ1Q1fk2CxB+klyWx2TOkFOoBKdzZYuwac/cMDF/lFBJ1GKwc1ELsEClog6+TYoweM4qfPToVNBNo1B0JgIVEE=\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2010\"}],\"references\":[]},\"root\":\"2725\"}", "3": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFdAAAAAAAAAWEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAABZQAAAAAAAAE5AAAAAAACAU0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAAUEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAR0AAAAAAAIBKQAAAAAAAAPh/AAAAAACAQUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAPEAAAAAAAAA1QAAAAAAAAEBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAEVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAgEpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAANUAAAAAAAAD4fwAAAAAAADlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAQEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAOUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAQFZAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAsQAAAAAAAADFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACxAAAAAAAAAMUAAAAAAAAAsQAAAAAAAACxAAAAAAAAAOUAAAAAAAAD4fwAAAAAAADFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACxAAAAAAAAAMUAAAAAAAAAxQAAAAAAAADVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA1QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAAsQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMUAAAAAAAAAkQAAAAAAAAPh/AAAAAAAAJEAAAAAAAAD4fwAAAAAAACRAAAAAAAAAJEAAAAAAAAAsQAAAAAAAAPh/AAAAAAAAHEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAALEAAAAAAAAAsQAAAAAAAACRAAAAAAAAA+H8AAAAAAAAsQAAAAAAAACRAAAAAAAAALEAAAAAAAAA1QAAAAAAAADFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAsQAAAAAAAAPh/AAAAAAAAJEAAAAAAAAD4fwAAAAAAACRAAAAAAAAACEAAAAAAAAD4fwAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAcQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACRAAAAAAAAAJEAAAAAAAAAkQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2011\"}],\"references\":[]},\"root\":\"2725\"}", "4": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAgFFAAAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAEBSQAAAAAAAADpAAAAAAACAUEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAREAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAOkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAAkQAAAAAAAAD5AAAAAAAAA+H8AAAAAAAD4fwAAAAAAADdAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMEAAAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACRAAAAAAAAAJEAAAAAAAAAYQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAAJEAAAAAAAAAqQAAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAkQAAAAAAAABhAAAAAAAAAGEAAAAAAAAD4fwAAAAAAABhAAAAAAAAAGEAAAAAAAAAkQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAAYQAAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAABhAAAAAAAAACEAAAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAACEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAAhAAAAAAAAACEAAAAAAAAAkQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"elHDxDbaPEHexZTBLHA6wS6RSTvXozBBM6wBhQgKNkH9vE1eH/k1weIJFQ5+bwZB2UxzzFhpQsGoe9FyFqk3QRvPNWtDPFDBH/sCA80nO0GFIYKo0HZCwS9Qiy1ygTpBE4ldd3rjCMFW8B/WSFJIQRj4oO/WsD9BVnVGORR8P0FE7oTdMn8lwQzhAW7B1z9B3yj7vE92MMEvvp76WJk3wXJ6eEIaiCBBY2R+zfkcLUHw+5qRqbFRwbziaxWbpT1B4ejd6zR8P0HnDHnNSkk/Qe7gE1I4t0JBcaoFW//RSEFf5wqWN05LQRzjZ6XiqkRB2wjcWJbvUUGI+nnXyeU9QfbJ/jiNEFPB5o3t+DtqQEF7938qWn1EwaplmWmhPE3BPvgFEcPYHkGl//6yjP00QTo8+COEIDpByf3jwG6mGkFXdw0XECRAwVwKEhuknDZB32EXIN0WH0F7LrOfr5ZOQaY3J7baWi/BRvnd2DElOUF9RVb2igw3QbkM+tBbKULB5cJsTJBwNUFiaIw2QmBHwfEgtMzBCE1Bh4RTUKzyNEHqnXEUN6hBwTnujDY6FzpB2yQKB5cyRsHIZRmnJVlKwUdus6Wj0FRBUy60tuCEPsF3249bqApEwZcI9amP1B/Bhax3VrtHS8FPdM6SEhspQZOp0AtkTT1BxBOcKu9FRkFDsMf1oo88wXM9krbWTmJBrDMGdcqsTkHb4Vtol786QTN/pTLKhiFBIfl1oXDkOEEr2jpsHedAQZxfM2lOO0DBBsWh8tLX9cA59iOd34BMQbYldy8aO1JBT3d1vqYOSkF1jW2kvCYzwcMrObqSJFZBPpJlJrZkLUFiwTurlcIvQS0tTIWHc/XAEVPl7qbuXEFATZ2f7E47Qfg04ln7A1ZBCO/B6evRUkEHB6MGECtJQbd+Fk35XwJB9g9EbQBfCsHvvBNMsLNUQbt4PdCnbjjBe9xdxL8IXUHnTwL8TZ1TQY/wPGEeOWBBZayNB8IyR0HanQoyXblCQZZlTGYfUz5BGSONsUUAVEHdv0ukWTxTQeitnTBY2WBBg73m4yZ9pMDnXDEzQYJdQeE9qRRuX1BBfqUFfMDQRkHLyajtkTBWQd9xucU9My9BYwPm9+qpAkFkbOPHut9eQZBlAjnz8U1BfgKDA+CNVkG61ge0ZA1SQetAI+qeJFtBpLgCmOXCS0H6WErqHZ9OQZ/QhfmI4llBI0V7eC2iHEFjxxAXaoZDQervBwm31CpBJ841lSPhQUETiNw1cHZDwQ0DnLR5QUJBAePk3mQTYEEjmaLCx15ZQZsHXuWd5kRBpj7rWqG3NsHGPYgtmYlXQWPKpxCBNVxBUW/NdtzsWEHMmO3UR+5aQZjHm98huVdBE1EnaAJ4WEENoJD3278aQQDjJANrhDVBT2OMHToVK0FyREy7KOZPQVbvgb+1xRVBqTUAZGKDUEEWk2C+fv1WQb80r31lVVNB8YGiXAAcVEHhnh3wOaRSQT/G64wngVVBdd0b1UYZS0HbJHHJaHRAwfLadmu/xFZBEpeW5kXeU0HWervtTsVWQeHRpGj2OjRBlWmABseoR0FmrDaRRRhUQdNntK7qlFZBjWj37OdOV0FRkOfU2YE2wfYfUt31V0NB7Rc+KbWZUkGl9dDr7/1RQf7ez/vetkRBovFj97/7LkGlnEm6WXpQQSpnnUz63GBB31M3qkBVUEG/evDM19tUQRmiTh76NFNBbaEaBoZq7MCzMMwFYIImQaDcB7TG6RbBpqOQ6sp+OMG0pR8Mt99owV4iow5iHljBYzNW1F/uFsFxkPECx6hbwZWT8d+jijtBwom3I2jYMcHa3LyLFjVFQfSzawFTPVhBw+2j0aP6MEGkhVvddTE0QWLYdTy2N2ZB3F5r4+WFW0E4G3YC4JclwYAUGHZnE1hB8tWzUyPiJUEKZKw4NstJweUkoH1hfUDB0sUlCqypRcFMuetueZopQeJ1Q1fk2CxB+klyWx2TOkFOoBKdzZYuwac/cMDF/lFBJ1GKwc1ELsEClog6+TYoweM4qfPToVNBNo1B0JgIVEE=\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2012\"}],\"references\":[]},\"root\":\"2725\"}", "5": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFJAAAAAAABAUkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAABZQAAAAAAAADtAAAAAAAAATkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAREAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAPEAAAAAAAAAwQAAAAAAAAPh/AAAAAAAAN0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAAmQAAAAAAAAD5AAAAAAAAA+H8AAAAAAAD4fwAAAAAAADdAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAKEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACZAAAAAAAAAJkAAAAAAAAAcQAAAAAAAACBAAAAAAAAAJkAAAAAAAAD4fwAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAAJEAAAAAAAAAmQAAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAcQAAAAAAAACBAAAAAAAAAGEAAAAAAAAD4fwAAAAAAABhAAAAAAAAAFEAAAAAAAAAkQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAAAcQAAAAAAAABxAAAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAAHEAAAAAAAAAgQAAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAAcQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAABRAAAAAAAAAGEAAAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAFEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAIEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABRAAAAAAAAAFEAAAAAAAAAgQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fxBIF4CUNlVAzJnZkilcVUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAABZQODH0jkT+0lASJHRLmtdU0AAAAAAAAD4fwAAAAAAAPh/J/KQSW6fT0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/JLdHlB91SkAAAAAAAABEQAAAAAAAAPh/HMXUEqr6R0AAAAAAAAD4fwAAAAAAAPh/ONi8ChsHQkCBZX6cR5VAQPNOxEbZYktAAAAAAAAA+H8AAAAAAAD4fxzF1BKq+kdAAAAAAAAA+H8AAAAAAAD4fxBIF4CUNkVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/SJHRLmtdQ0AAAAAAAAD4fxBIF4CUNkVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/SJHRLmtdQ0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/6y830QxSQUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8n8pBJbp8/QMAKHwDGSDxAAAAAAAAA+H8AAAAAAAD4f9LxfYJVXEZAAAAAAAAA+H8AAAAAAAD4f4FlfpxHlUBAgWV+nEeVQEAkt0eUH3U6QMAKHwDGSDxAgWV+nEeVQEAAAAAAAAD4f+svN9EMUkFAAAAAAAAA+H8AAAAAAAD4f3ppC5mxfjhAJ/KQSW6fP0CBZX6cR5VAQCfykElunz9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H/ACh8Axkg8QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/J/KQSW6fP0Akt0eUH3U6QMAKHwDGSDxAemkLmbF+OEAAAAAAAAD4f3ppC5mxfjhA0vF9glVcNkAn8pBJbp8/QAAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/JLdHlB91OkAkt0eUH3U6QCS3R5QfdTpAAAAAAAAA+H/ACh8Axkg8QAAAAAAAAPh/JLdHlB91OkDACh8Axkg8QMAKHwDGSDxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/emkLmbF+OEAkt0eUH3U6QAAAAAAAAPh/emkLmbF+OEAAAAAAAAD4f9LxfYJVXDZAemkLmbF+OEAAAAAAAAD4f3ppC5mxfjhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/0vF9glVcNkAAAAAAAAD4fwAAAAAAAPh/wAofAMZIPEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H/rLzfRDFIxQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4f9LxfYJVXDZA0vF9glVcNkDACh8Axkg8QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2013\"}],\"references\":[]},\"root\":\"2725\"}", "6": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAACAVkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAALEAAAAAAAAD4fwAAAAAAADpAAAAAAAAA+H8AAAAAAABGQAAAAAAAAPh/AAAAAAAAOkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAyQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMkAAAAAAAAAsQAAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAIEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAIEAAAAAAAAAgQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAgQAAAAAAAACRAAAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAAKEAAAAAAAAAoQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAOEAAAAAAAAAsQAAAAAAAAPh/AAAAAAAALEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAD4fwAAAAAAACBAAAAAAAAAIEAAAAAAAAAkQAAAAAAAABBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACRAAAAAAAAAIEAAAAAAAAAgQAAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAIEAAAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAAIEAAAAAAAAAgQAAAAAAAABhAAAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAATEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAKEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAIEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"F2iuempoWsH7tToHjblxQVj7oJ5vyGHBDZIDK3UXYsFDtx7SCi5TQcaGydfocDFBNqZlMXiZcsEBEX6O/d9iwUs1QLh3YV7BFCeqRIMoY8FWGp0PYPZwwctBD3OqD1rBQY44Hq2ZYMGC2T7NiTNjQULz273ojlvB7GrWhjfIWsG1ULtQvJBuQd1aphQKc1vBMV5qn6kAcUHJeJ16ZEVywckyUWhTBlnBRFPFJ+4mYcFhtxziywNbwXRqsypPymLBzjSgXgtHXMFqYV3nhWlgwYtbSRFxv1dBjM4SxWWNBkHs25Xl/MZOQQDPN3ZHxmXB8j45mHREXkElNh61at5uQcpV0ZP7kHJBlfrXVCiyXsF+XpFndNFYwTVwxhZUrlfBzOIsNgxcaEFP1JI8BClawVt3Y56yT2LBjYeGEc7KV8EmTP5f3ixOQeTt0Z73SFnBywu4UeWMX8EXaganNXVOQV9UbyHu2l/BmNpy/vbpWcHplPWMS75uQT07oEEalXFBc/x/8Em2XcGnRhoXVrlKQY9VBl3Nf1vB0qqT5l04BcH99EwQhXBYQVTudUrB5FBBD3imgGBnbEGIFtNuk/pHQc3KXWQpKTVBwJzhtQq5b8HaIZgGZ2g/QWkr26eOkFdBKmF2vhd7Q0H3mqdcWfw0QaULN4xmW1rB10DW+Ti8VUHkw4kRDgxzQYk1VdWGJ0DBgIxVX8fAXEE30t3mPJpUQZD5lm5hnlNBIyIflH2MOMELrYgQPBthwejfAkgp51NBJi/8ZEW4M0HIe46xVRgowQTXChCs8CvBBWTWgMMpVEGFhNT/T1w+QfWvLE6neDlBMZT//mRq9kDTOnGxK3gPQQ+algM4MGhBBreljICUZsGNA57HeHFlQa1MRoFLNEVBPeCKC0V5GcHlVH03lNxhQWVr42gmC2ZBaL4FADVfSUHGf/Ne0y4pQXBEpu7RDFbBy+sp3sUjMEHFyJpX0lg1QZeSNoNNxSxBF0S9CJlDPUHxfev8z4Ngwb7xL6jMJhvBGsbzZ2HDBUFqN0/92r9fQfku4nIVeyfBsiuShswYUEHF31U8P+VEQQwiM/0HazhBNc+cv9qAVUFwuphKCxUOQby+93GmMVFBTMs7fJRsS0F0FED/ej5FQY5QqxtljFJByBeG5FTzK0FAjj2mD4lCQac9xIOmvUdBLMS/2XeZTUHtGjmITTMwQXBDNWWNQkBBqhwFS+qmZUH6ETljcjpoQRj7/2leJmFBa0D7cgvEYEFUWlFbAfdEQRGBWS6IlTLBPGG1CfmqP0FUrGWNwsAxQUmV/VaTJFNBFILxJd4hTUEH5ng/DHhKQUbjra9JSERBgFNi/9teHkG8EB9GkwEswf0eEKn6ukBBWxneHczSJEFl1wPAU49WwSrxP5HOSmZBEFcE9tbO+8CMNcpwWWRMQb1wCjTaF19Blyg2o8RabUG3yyWb+rY4QaA4oZ4XbVtBTRAczyalRUEmpWDSGzRUQS4lk0KY0TlB+L0iwIlyXUEsFe7q38JIQRhWXu9skEBBNcvyyFhpUkHnE7dBEzswQTWdcu4BFlJBWx8+MhspSkEOa1edZXRAQR5nupubDGZBnWUxm01rXEGRo4S6BqdHQbN1AMSzG2hBgL0BER8gU0Ei8lZUou5NQT9EOJhWL2NBuDYV1r54LUGEk6GfyCgiwfy2cocv3kVBxXQvUZAfZkGi7obDHNdBQbkdJSsEIUFB5b+Unsy4cUENcS0frMhBQWbI0LTJ6XHBXTk5fMkPcsEUuG+0/Aq/wOz3W4Ppcl1BXKfKk/1oSUHv930SzDAXQfXDYW74ZETBjk3c3tNwZkHEJrV6TOM1wSmWc1K/kBHBax90lYF4MMHfeV7YE8k5wWAsMlSIF1LB5haxHL3mHsHhRq9fuoVeQWUbalEN9gzBqQ3xBlcEMMFuPEKQm9RxQVKSFN6VCHLB/pb02/0Oa8ELDRMzQ5NsQaalvT5jAjTBz/eivovRP0Ejn5rSoT5ywWWYl6JjSllByXHYs/KxakEWLkmPFdxyQX6/EOxAJzVBgeS6YL7AQUE=\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2014\"}],\"references\":[]},\"root\":\"2725\"}", "7": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFlAAAAAAAAAV0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAABPQAAAAAAAQFFAAAAAAAAATUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAPkAAAAAAAAA2QAAAAAAAAPh/AAAAAAAANkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAIkAAAAAAAAAiQAAAAAAAADpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAMEAAAAAAAAD4fwAAAAAAAC5AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAcQAAAAAAAABxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAC5AAAAAAAAA+H8AAAAAAAD4fwAAAAAAACZAAAAAAAAAIkAAAAAAAAAcQAAAAAAAABxAAAAAAAAAJkAAAAAAAAD4fwAAAAAAACpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABRAAAAAAAAAIkAAAAAAAAAiQAAAAAAAACJAAAAAAACAR0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAiQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABRAAAAAAAAAIkAAAAAAAAAuQAAAAAAAABxAAAAAAAAAFEAAAAAAAAD4fwAAAAAAABRAAAAAAAAAFEAAAAAAAAAmQAAAAAAAAPh/AAAAAAAAFEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAAAcQAAAAAAAABxAAAAAAAAA+H8AAAAAAAAcQAAAAAAAAPh/AAAAAAAAHEAAAAAAAAAcQAAAAAAAABxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAAAcQAAAAAAAAPh/AAAAAAAAFEAAAAAAAAD4fwAAAAAAABRAAAAAAAAAFEAAAAAAAAD4fwAAAAAAABRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAFEAAAAAAAABJQAAAAAAAAPh/AAAAAAAAHEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAABxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAAhAAAAAAAAA+H8AAAAAAAAiQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2015\"}],\"references\":[]},\"root\":\"2725\"}", "8": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFlAAAAAAACAVUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAABNQAAAAAAAADpAAAAAAAAASkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAPkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAANkAAAAAAAAAkQAAAAAAAAPh/AAAAAAAAKEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAAoQAAAAAAAADJAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAC5AAAAAAAAA+H8AAAAAAAD4fwAAAAAAACpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAKEAAAAAAAAAxQAAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFBAAAAAAAAA+H8AAAAAAAA7QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAsQAAAAAAAABxAAAAAAAAAIEAAAAAAAAD4fwAAAAAAACpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABxAAAAAAAAAIEAAAAAAAAAcQAAAAAAAABxAAAAAAAAAIkAAAAAAAAD4fwAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABRAAAAAAAAAIkAAAAAAAAAkQAAAAAAAACJAAAAAAACAR0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACZAAAAAAAAAIEAAAAAAAAAsQAAAAAAAACJAAAAAAAAAGEAAAAAAAAAcQAAAAAAAABhAAAAAAAAAFEAAAAAAAAAgQAAAAAAAAPh/AAAAAAAAEEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAAAYQAAAAAAAACJAAAAAAAAA+H8AAAAAAAAiQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAcQAAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAEEAAAAAAAAAYQAAAAAAAAPh/AAAAAAAAFEAAAAAAAAD4fwAAAAAAABRAAAAAAAAAEEAAAAAAAAD4fwAAAAAAABRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAIBMQAAAAAAAAPh/AAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAQQAAAAAAAAPh/AAAAAAAACEAAAAAAAAD4fwAAAAAAABBAAAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2016\"}],\"references\":[]},\"root\":\"2725\"}", "9": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFlAAAAAAACAVEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAEBTQAAAAAAAAEBAAAAAAADAUEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAPkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAPkAAAAAAAAAuQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAAoQAAAAAAAADlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADlAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAC5AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAADFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAANkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFdAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADFAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAChAAAAAAAAAKEAAAAAAAAAkQAAAAAAAACRAAAAAAAAAKEAAAAAAAAD4fwAAAAAAADRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABxAAAAAAAAAKEAAAAAAAAAuQAAAAAAAAChAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACRAAAAAAAAAKEAAAAAAAAAoQAAAAAAAACRAAAAAAAAAHEAAAAAAAAD4fwAAAAAAABxAAAAAAAAAJEAAAAAAAAAuQAAAAAAAAPh/AAAAAAAAFEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAkQAAAAAAAABxAAAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAAHEAAAAAAAAAkQAAAAAAAABxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAFEAAAAAAAAAkQAAAAAAAAPh/AAAAAAAAHEAAAAAAAAD4fwAAAAAAABxAAAAAAAAAFEAAAAAAAAD4fwAAAAAAABxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAHEAAAAAAAIBUQAAAAAAAAPh/AAAAAAAALkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAUQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABxAAAAAAAAA+H8AAAAAAAAoQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2017\"}],\"references\":[]},\"root\":\"2725\"}", "10": "{\"content\":{\"events\":[{\"cols\":[\"latitude\",\"Country\",\"longitude\",\"size_Reaction\",\"Reaction\"],\"column_source\":{\"id\":\"2779\",\"type\":\"ColumnDataSource\"},\"kind\":\"ColumnDataChanged\",\"new\":{\"Country\":[\"Montserrat\",\"Vanuatu\",\"Costa Rica\",\"Nicaragua\",\"Mayotte\",\"Equatorial Guinea\",\"Tonga\",\"El Salvador\",\"Chile\",\"Guatemala\",\"Cook Islands\",\"Dominica\",\"Ecuador\",\"Bhutan\",\"U.S. Virgin Islands\",\"Anguilla\",\"Papua New Guinea\",\"British Virgin Islands\",\"Solomon Islands\",\"Samoa\",\"Guyana\",\"Panama\",\"Argentina\",\"Belize\",\"Puerto Rico\",\"Jamaica\",\"Oman\",\"Algeria\",\"Jordan\",\"Mexico\",\"Tajikistan\",\"Northern Mariana Islands\",\"New Zealand\",\"Haiti\",\"Paraguay\",\"Uruguay\",\"Brunei\",\"Grenada\",\"Honduras\",\"Suriname\",\"Mozambique\",\"Barbados\",\"Colombia\",\"Lebanon\",\"Peru\",\"Martinique\",\"Guam\",\"New Caledonia\",\"Aruba\",\"Swaziland\",\"Bermuda\",\"Burkina Faso\",\"Mauritius\",\"Eritrea\",\"Australia\",\"Lesotho\",\"San Marino\",\"French Polynesia\",\"Namibia\",\"Seychelles\",\"South Africa\",\"Cameroon\",\"Guadeloupe\",\"Qatar\",\"Fiji\",\"Iceland\",\"Afghanistan\",\"Yemen\",\"Somalia\",\"Senegal\",\"Cayman Islands\",\"Madagascar\",\"Gabon\",\"Morocco\",\"Portugal\",\"Kuwait\",\"Angola\",\"Slovenia\",\"Togo\",\"Benin\",\"Indonesia\",\"Canada\",\"Thailand\",\"Romania\",\"Spain\",\"Nepal\",\"Singapore\",\"Rwanda\",\"Monaco\",\"Brazil\",\"Denmark\",\"Italy\",\"Norway\",\"Libya\",\"Cuba\",\"Mali\",\"Andorra\",\"Kyrgyzstan\",\"Faroe Islands\",\"Kenya\",\"Latvia\",\"Malta\",\"Bahrain\",\"France\",\"Ethiopia\",\"Uganda\",\"Estonia\",\"Iraq\",\"Switzerland\",\"Greece\",\"Belarus\",\"Israel\",\"Tunisia\",\"Poland\",\"Malaysia\",\"Hong Kong\",\"Sri Lanka\",\"India\",\"Botswana\",\"Mauritania\",\"Sweden\",\"Germany\",\"Saudi Arabia\",\"Malawi\",\"Ukraine\",\"Lithuania\",\"Belgium\",\"Ireland\",\"Slovakia\",\"Luxembourg\",\"French Guiana\",\"Cambodia\",\"Ghana\",\"Cyprus\",\"Maldives\",\"Japan\",\"Austria\",\"Uzbekistan\",\"Bulgaria\",\"Azerbaijan\",\"Croatia\",\"Pakistan\",\"Zimbabwe\",\"Hungary\",\"Georgia\",\"Liechtenstein\",\"Djibouti\",\"Egypt\",\"Montenegro\",\"Mongolia\",\"Kazakhstan\",\"Zambia\",\"Macau\",\"Armenia\",\"Turkey\",\"Bangladesh\",\"Nigeria\",\"Gibraltar\",\"Finland\",\"China\",\"Serbia\",\"Albania\",\"Nauru\",\"Central African Republic\",\"Kiribati\",\"American Samoa\",\"Antarctica\",\"French Southern Territories\",\"Burundi\",\"Bouvet Island\",\"Cape Verde\",\"Christmas Island\",\"Western Sahara\",\"Guernsey\",\"Guinea\",\"Guinea-Bissau\",\"Greenland\",\"Isle of Man\",\"British Indian Ocean Territory\",\"Jersey\",\"Liberia\",\"Norfolk Island\",\"Niue\",\"Pitcairn Islands\",\"Palau\",\"Sierra Leone\",\"Chad\",\"Tokelau\",\"Turkmenistan\",\"Timor-Leste\",\"Tuvalu\",\"Vatican City\",\"Kosovo\"],\"Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAE9AAAAAAACASEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAIBPQAAAAAAAADpAAAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAOEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAO0AAAAAAAAAmQAAAAAAAAPh/AAAAAAAAMkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAIkAAAAAAAAD4fwAAAAAAADVAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACZAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAD9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAACpAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAJkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAE9AAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAyQAAAAAAAABhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAACZAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAAIkAAAAAAAAAYQAAAAAAAABhAAAAAAAAAIkAAAAAAAAD4fwAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAABBAAAAAAAAAGEAAAAAAAAAgQAAAAAAAACBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAYQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABhAAAAAAAAAIEAAAAAAAAAiQAAAAAAAABhAAAAAAAAAEEAAAAAAAAD4fwAAAAAAABBAAAAAAAAAEEAAAAAAAAAgQAAAAAAAAPh/AAAAAAAACEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAAQQAAAAAAAABBAAAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAAEEAAAAAAAAAgQAAAAAAAABBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAACEAAAAAAAAAQQAAAAAAAAPh/AAAAAAAAEEAAAAAAAAD4fwAAAAAAABBAAAAAAAAACEAAAAAAAAD4fwAAAAAAABBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAMBQQAAAAAAAAPh/AAAAAAAAJkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAABBAAAAAAAAA+H8AAAAAAAAgQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]},\"latitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"longitude\":{\"__ndarray__\":\"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\",\"dtype\":\"float64\",\"shape\":[193]},\"size_Reaction\":{\"__ndarray__\":\"AAAAAAAA+H8AAAAAAAD4f2tROHNdr1NAAAAAAACAUUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H9byTWv19dTQPS71ra+fklAAAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/emkLmbF+SEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/4MfSORP7SUCBZX6cR5VAQAAAAAAAAPh/EEgXgJQ2RUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAPkAAAAAAAAD4fyZmWmey6UZAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAERAAAAAAAAA+H8AAAAAAAD4f4FlfpxHlUBAAAAAAAAA+H8AAAAAAAD4fzTywga91ktAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/ONi8ChsHQkAAAAAAAAD4fzjYvAobB0JAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/gWV+nEeVQEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/emkLmbF+OEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4f2tROHNdr1NAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8QSBeAlDZFQHppC5mxfjhAAAAAAAAA+H8AAAAAAAD4f4FlfpxHlUBAAAAAAAAA+H8AAAAAAAD4f3ppC5mxfjhAAAAAAAAAPkB6aQuZsX44QHppC5mxfjhAAAAAAAAAPkAAAAAAAAD4f8AKHwDGSDxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAADRAemkLmbF+OEDACh8Axkg8QMAKHwDGSDxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H96aQuZsX44QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4f3ppC5mxfjhAwAofAMZIPEAAAAAAAAA+QHppC5mxfjhAAAAAAAAANEAAAAAAAAD4fwAAAAAAADRAAAAAAAAANEDACh8Axkg8QAAAAAAAAPh/6y830QxSMUAAAAAAAAD4fwAAAAAAAPh/emkLmbF+OEAAAAAAAAA0QAAAAAAAADRAAAAAAAAA+H/ACh8Axkg8QAAAAAAAAPh/AAAAAAAANEDACh8Axkg8QAAAAAAAADRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/6y830QxSMUAAAAAAAAA0QAAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAADRA6y830QxSMUAAAAAAAAD4fwAAAAAAADRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/emkLmbF+OECtibkyoHZUQAAAAAAAAPh/gWV+nEeVQEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H/rLzfRDFIxQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAADRAAAAAAAAA+H/ACh8Axkg8QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=\",\"dtype\":\"float64\",\"shape\":[193]}}},{\"attr\":\"text\",\"kind\":\"ModelChanged\",\"model\":{\"id\":\"2724\",\"type\":\"Title\"},\"new\":\"Year: 2018\"}],\"references\":[]},\"root\":\"2725\"}"};
+  var dim_vals = ['2008.0'];
+  var keyMap = {"('2008.0',)": 0, "('2009.0',)": 1, "('2010.0',)": 2, "('2011.0',)": 3, "('2012.0',)": 4, "('2013.0',)": 5, "('2014.0',)": 6, "('2015.0',)": 7, "('2016.0',)": 8, "('2017.0',)": 9, "('2018.0',)": 10};
+  var notFound = "<h2 style='vertical-align: middle>No frame at selected dimension value.<h2>";
+
+  var anim = new HoloViews.BokehSelectionWidget(frame_data, "5ba8438f17354ce4b025a40a467331e9", widget_ids,
+  keyMap, dim_vals, notFound, false, "default",
+  true, "", false, "2725");
+
+  HoloViews.index['2725'] = anim;
+}
+
+
+
+
+HoloViews.init_slider('5ba8438f17354ce4b025a40a467331e9', '2725', 'Year', ['2008.0', '2009.0', '2010.0', '2011.0', '2012.0', '2013.0', '2014.0', '2015.0', '2016.0', '2017.0', '2018.0'], {}, ['2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018'], false, 1, 0, 'None', 0, 200, 'https://code.jquery.com/ui/1.10.4/jquery-ui.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js')
+
+
+
+
+create_widget();
+
+// Ugly hack - see HoloViews #2574 for more information
+if (!(document.getElementById('2725')) && !(document.getElementById('_anim_imgNone'))) {
+  console.log("Creating DOM nodes dynamically for assumed nbconvert export. To generate clean HTML output set HV_DOC_HTML as an environment variable.")
+  var htmlObject = document.createElement('div');
+  htmlObject.innerHTML = `<div id='2725' style='display: table; margin: 0 auto;'>
+
+
+
+
+
+  <div class="bk-root" id="97055447-900b-4207-bbeb-4430b3f8891a" data-root-id="2725"></div>
+</div>`;
+  var scriptTags = document.getElementsByTagName('script');
+  var parentTag = scriptTags[scriptTags.length-1].parentNode;
+  if (parentTag.attributes.length && (parentTag.attributes[0].name == 'data-shell-mode')) {
+    alert('Displaying PyViz objects in JupyterLab requires the jupyterlab_pyviz extension to be installed, install it with:\n\n\tjupyter labextension install @pyviz/jupyterlab_pyviz');
+  } else {
+    parentTag.append(htmlObject)
+  }
+}
+(function(root) {
+  function embed_document(root) {
+    
+  var docs_json = {"fd2e7be5-7dee-47cf-ad87-189134f79a48":{"roots":{"references":[{"attributes":{"below":[{"id":"2733","type":"LinearAxis"}],"left":[{"id":"2738","type":"LinearAxis"}],"min_border_bottom":10,"min_border_left":10,"min_border_right":10,"min_border_top":10,"plot_height":300,"plot_width":550,"renderers":[{"id":"2733","type":"LinearAxis"},{"id":"2737","type":"Grid"},{"id":"2738","type":"LinearAxis"},{"id":"2742","type":"Grid"},{"id":"2747","type":"BoxAnnotation"},{"id":"2774","type":"TileRenderer"},{"id":"2785","type":"GlyphRenderer"}],"title":{"id":"2724","type":"Title"},"toolbar":{"id":"2746","type":"Toolbar"},"x_range":{"id":"2717","type":"Range1d"},"x_scale":{"id":"2729","type":"LinearScale"},"y_range":{"id":"2718","type":"Range1d"},"y_scale":{"id":"2731","type":"LinearScale"}},"id":"2725","subtype":"Figure","type":"Plot"},{"attributes":{},"id":"2744","type":"PanTool"},{"attributes":{"axis_label":"Latitude","bounds":"auto","formatter":{"id":"2758","type":"MercatorTickFormatter"},"major_label_orientation":"horizontal","plot":{"id":"2725","subtype":"Figure","type":"Plot"},"ticker":{"id":"2757","type":"MercatorTicker"},"visible":false},"id":"2738","type":"LinearAxis"},{"attributes":{"source":{"id":"2779","type":"ColumnDataSource"}},"id":"2786","type":"CDSView"},{"attributes":{"tile_source":{"id":"2771","type":"WMTSTileSource"}},"id":"2774","type":"TileRenderer"},{"attributes":{"zoom_on_axis":false},"id":"2719","type":"WheelZoomTool"},{"attributes":{},"id":"2734","type":"BasicTicker"},{"attributes":{},"id":"2745","type":"ResetTool"},{"attributes":{"code":"\n        var projections = require(\"core/util/projections\");\n        var x = special_vars.data_x\n        var y = special_vars.data_y\n        var coords = projections.wgs84_mercator.inverse([x, y])\n        return \"\" + (coords[1]).toFixed(4)\n    "},"id":"2788","type":"CustomJSHover"},{"attributes":{"fill_color":{"field":"Reaction","transform":{"id":"2778","type":"LinearColorMapper"}},"line_color":{"field":"Reaction","transform":{"id":"2778","type":"LinearColorMapper"}},"size":{"field":"size_Reaction","units":"screen"},"x":{"field":"longitude"},"y":{"field":"latitude"}},"id":"2782","type":"Scatter"},{"attributes":{},"id":"2780","type":"Selection"},{"attributes":{"code":"\n        var projections = require(\"core/util/projections\");\n        var x = special_vars.data_x\n        var y = special_vars.data_y\n        var coords = projections.wgs84_mercator.inverse([x, y])\n        return \"\" + (coords[0]).toFixed(4)\n    "},"id":"2787","type":"CustomJSHover"},{"attributes":{},"id":"2731","type":"LinearScale"},{"attributes":{"callback":null,"formatters":{"latitude":{"id":"2788","type":"CustomJSHover"},"longitude":{"id":"2787","type":"CustomJSHover"}},"renderers":[{"id":"2785","type":"GlyphRenderer"}],"tooltips":[["longitude","@{longitude}{custom}"],["latitude","@{latitude}{custom}"],["Reaction","@{Reaction}"],["Country","@{Country}"]]},"id":"2723","type":"HoverTool"},{"attributes":{"dimension":"lon","mantissas":[1,2,5]},"id":"2755","type":"MercatorTicker"},{"attributes":{"dimension":"lat","precision":"auto"},"id":"2758","type":"MercatorTickFormatter"},{"attributes":{"dimension":"lat","mantissas":[1,2,5]},"id":"2757","type":"MercatorTicker"},{"attributes":{"callback":null,"data":{"Country":["Montserrat","Vanuatu","Costa Rica","Nicaragua","Mayotte","Equatorial Guinea","Tonga","El Salvador","Chile","Guatemala","Cook Islands","Dominica","Ecuador","Bhutan","U.S. Virgin Islands","Anguilla","Papua New Guinea","British Virgin Islands","Solomon Islands","Samoa","Guyana","Panama","Argentina","Belize","Puerto Rico","Jamaica","Oman","Algeria","Jordan","Mexico","Tajikistan","Northern Mariana Islands","New Zealand","Haiti","Paraguay","Uruguay","Brunei","Grenada","Honduras","Suriname","Mozambique","Barbados","Colombia","Lebanon","Peru","Martinique","Guam","New Caledonia","Aruba","Swaziland","Bermuda","Burkina Faso","Mauritius","Eritrea","Australia","Lesotho","San Marino","French Polynesia","Namibia","Seychelles","South Africa","Cameroon","Guadeloupe","Qatar","Fiji","Iceland","Afghanistan","Yemen","Somalia","Senegal","Cayman Islands","Madagascar","Gabon","Morocco","Portugal","Kuwait","Angola","Slovenia","Togo","Benin","Indonesia","Canada","Thailand","Romania","Spain","Nepal","Singapore","Rwanda","Monaco","Brazil","Denmark","Italy","Norway","Libya","Cuba","Mali","Andorra","Kyrgyzstan","Faroe Islands","Kenya","Latvia","Malta","Bahrain","France","Ethiopia","Uganda","Estonia","Iraq","Switzerland","Greece","Belarus","Israel","Tunisia","Poland","Malaysia","Hong Kong","Sri Lanka","India","Botswana","Mauritania","Sweden","Germany","Saudi Arabia","Malawi","Ukraine","Lithuania","Belgium","Ireland","Slovakia","Luxembourg","French Guiana","Cambodia","Ghana","Cyprus","Maldives","Japan","Austria","Uzbekistan","Bulgaria","Azerbaijan","Croatia","Pakistan","Zimbabwe","Hungary","Georgia","Liechtenstein","Djibouti","Egypt","Montenegro","Mongolia","Kazakhstan","Zambia","Macau","Armenia","Turkey","Bangladesh","Nigeria","Gibraltar","Finland","China","Serbia","Albania","Nauru","Central African Republic","Kiribati","American Samoa","Antarctica","French Southern Territories","Burundi","Bouvet Island","Cape Verde","Christmas Island","Western Sahara","Guernsey","Guinea","Guinea-Bissau","Greenland","Isle of Man","British Indian Ocean Territory","Jersey","Liberia","Norfolk Island","Niue","Pitcairn Islands","Palau","Sierra Leone","Chad","Tokelau","Turkmenistan","Timor-Leste","Tuvalu","Vatican City","Kosovo"],"Reaction":{"__ndarray__":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAWUAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAFJAAAAAAAAAUUAAAAAAAABRQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAgERAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAIBCQAAAAAAAgEJAAAAAAAAA+H8AAAAAAABBQAAAAAAAAPh/AAAAAAAA+H8AAAAAAABBQAAAAAAAAD9AAAAAAAAAP0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAAO0AAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA4QAAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAANEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAA0QAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAxQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACpAAAAAAAAAKkAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAKkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAqQAAAAAAAAPh/AAAAAAAAKkAAAAAAAAAkQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAJEAAAAAAAAAkQAAAAAAAACRAAAAAAAAAJEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAACRAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAkQAAAAAAAACRAAAAAAAAA+H8AAAAAAAAkQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAYQAAAAAAAABhAAAAAAAAA+H8AAAAAAAAYQAAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAAGEAAAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAAhAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAAIQAAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh/AAAAAAAA+H8=","dtype":"float64","shape":[193]},"latitude":{"__ndarray__":"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","dtype":"float64","shape":[193]},"longitude":{"__ndarray__":"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","dtype":"float64","shape":[193]},"size_Reaction":{"__ndarray__":"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","dtype":"float64","shape":[193]}},"selected":{"id":"2780","type":"Selection"},"selection_policy":{"id":"2791","type":"UnionRenderers"}},"id":"2779","type":"ColumnDataSource"},{"attributes":{"match_aspect":true,"overlay":{"id":"2747","type":"BoxAnnotation"}},"id":"2720","type":"BoxZoomTool"},{"attributes":{},"id":"2729","type":"LinearScale"},{"attributes":{"active_drag":"auto","active_inspect":"auto","active_multi":null,"active_scroll":"auto","active_tap":"auto","tools":[{"id":"2719","type":"WheelZoomTool"},{"id":"2720","type":"BoxZoomTool"},{"id":"2723","type":"HoverTool"},{"id":"2744","type":"PanTool"},{"id":"2745","type":"ResetTool"}]},"id":"2746","type":"Toolbar"},{"attributes":{"callback":null,"end":11648433.534726392,"reset_end":11648433.534726392,"reset_start":-13041079.941605467,"start":-13041079.941605467,"tags":[[["Latitude","Latitude",null]]]},"id":"2718","type":"Range1d"},{"attributes":{"bottom_units":"screen","fill_alpha":{"value":0.5},"fill_color":{"value":"lightgrey"},"left_units":"screen","level":"overlay","line_alpha":{"value":1.0},"line_color":{"value":"black"},"line_dash":[4,4],"line_width":{"value":2},"plot":null,"render_mode":"css","right_units":"screen","top_units":"screen"},"id":"2747","type":"BoxAnnotation"},{"attributes":{"data_source":{"id":"2779","type":"ColumnDataSource"},"glyph":{"id":"2782","type":"Scatter"},"hover_glyph":null,"muted_glyph":{"id":"2784","type":"Scatter"},"nonselection_glyph":{"id":"2783","type":"Scatter"},"selection_glyph":null,"view":{"id":"2786","type":"CDSView"}},"id":"2785","type":"GlyphRenderer"},{"attributes":{"attribution":"&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors","url":"https://maps.wikimedia.org/osm-intl/{Z}/{X}/{Y}@2x.png"},"id":"2771","type":"WMTSTileSource"},{"attributes":{"grid_line_color":{"value":null},"plot":{"id":"2725","subtype":"Figure","type":"Plot"},"ticker":{"id":"2734","type":"BasicTicker"}},"id":"2737","type":"Grid"},{"attributes":{},"id":"2791","type":"UnionRenderers"},{"attributes":{"callback":null,"end":19972320.9848146,"reset_end":19972320.9848146,"reset_start":-19502978.975997232,"start":-19502978.975997232,"tags":[[["Longitude","Longitude",null]]]},"id":"2717","type":"Range1d"},{"attributes":{},"id":"2739","type":"BasicTicker"},{"attributes":{"fill_alpha":{"value":0.2},"fill_color":{"field":"Reaction","transform":{"id":"2778","type":"LinearColorMapper"}},"line_alpha":{"value":0.2},"line_color":{"field":"Reaction","transform":{"id":"2778","type":"LinearColorMapper"}},"size":{"field":"size_Reaction","units":"screen"},"x":{"field":"longitude"},"y":{"field":"latitude"}},"id":"2784","type":"Scatter"},{"attributes":{"axis_label":"Longitude","bounds":"auto","formatter":{"id":"2756","type":"MercatorTickFormatter"},"major_label_orientation":"horizontal","plot":{"id":"2725","subtype":"Figure","type":"Plot"},"ticker":{"id":"2755","type":"MercatorTicker"},"visible":false},"id":"2733","type":"LinearAxis"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"field":"Reaction","transform":{"id":"2778","type":"LinearColorMapper"}},"line_alpha":{"value":0.1},"line_color":{"field":"Reaction","transform":{"id":"2778","type":"LinearColorMapper"}},"size":{"field":"size_Reaction","units":"screen"},"x":{"field":"longitude"},"y":{"field":"latitude"}},"id":"2783","type":"Scatter"},{"attributes":{"plot":null,"text":"Year: 2008","text_color":{"value":"black"},"text_font_size":{"value":"12pt"}},"id":"2724","type":"Title"},{"attributes":{"dimension":"lon","precision":"auto"},"id":"2756","type":"MercatorTickFormatter"},{"attributes":{"dimension":1,"grid_line_color":{"value":null},"plot":{"id":"2725","subtype":"Figure","type":"Plot"},"ticker":{"id":"2739","type":"BasicTicker"}},"id":"2742","type":"Grid"},{"attributes":{"high":100.0,"low":3.0,"palette":["#fbfcbf","#fbfabd","#fbf9bb","#fbf7b9","#fcf5b7","#fcf3b5","#fcf1b3","#fcf0b1","#fceeb0","#fcecae","#fceaac","#fce8aa","#fce6a8","#fce5a6","#fce3a5","#fde1a3","#fddfa1","#fddd9f","#fddc9d","#fdda9c","#fdd89a","#fdd698","#fdd497","#fdd295","#fdd193","#fdcf92","#fdcd90","#fecb8e","#fec98d","#fec78b","#fec689","#fec488","#fec286","#fec085","#febe83","#febc82","#febb80","#feb97f","#feb77d","#feb57c","#feb37b","#feb179","#feaf78","#feae76","#feac75","#feaa74","#fea873","#fea671","#fda470","#fda26f","#fda16e","#fd9f6c","#fd9d6b","#fd9b6a","#fd9969","#fd9768","#fd9567","#fc9366","#fc9265","#fc9064","#fc8e63","#fc8c63","#fb8a62","#fb8861","#fb8660","#fb8460","#fa825f","#fa805e","#fa7f5e","#f97d5d","#f97b5d","#f9795c","#f8775c","#f8755c","#f7735c","#f7715b","#f6705b","#f66e5b","#f56c5b","#f56a5b","#f4685b","#f3675b","#f3655c","#f2635c","#f1615c","#f0605d","#ef5e5d","#ee5d5d","#ee5b5e","#ed595f","#ec585f","#eb5660","#ea5560","#e85461","#e75262","#e65162","#e55063","#e44e64","#e24d65","#e14c66","#e04b66","#de4a67","#dd4968","#dc4869","#da4769","#d9466a","#d7456b","#d6446c","#d4436d","#d3426d","#d1426e","#d0416f","#ce4070","#cd3f70","#cb3e71","#ca3e72","#c83d72","#c63c73","#c53c74","#c33b74","#c23a75","#c03a75","#be3976","#bd3977","#bb3877","#b93778","#b83778","#b63679","#b53679","#b3357a","#b1357a","#b0347b","#ae347b","#ac337b","#ab337c","#a9327c","#a7317d","#a6317d","#a4307d","#a3307e","#a12f7e","#9f2f7e","#9e2e7e","#9c2e7f","#9a2d7f","#992d7f","#972c7f","#952c80","#942b80","#922b80","#912a80","#8f2a80","#8d2980","#8c2980","#8a2881","#892881","#872781","#852681","#842681","#822581","#812581","#7f2481","#7e2481","#7c2381","#7a2281","#792281","#772181","#762181","#742081","#731f81","#711f81","#6f1e81","#6e1e81","#6c1d80","#6b1c80","#691c80","#681b80","#661a80","#651a80","#63197f","#61187f","#60187f","#5e177f","#5d177e","#5b167e","#5a157e","#58157e","#57147d","#55137d","#53137c","#52127c","#50127b","#4f117b","#4d117a","#4b1079","#4a1079","#481078","#470f77","#450f76","#430f75","#420f74","#400f73","#3e0f72","#3c0f71","#3b0f6f","#390f6e","#370f6c","#350f6a","#341068","#321067","#301065","#2f1062","#2d1060","#2b115e","#2a115c","#281159","#261157","#251155","#231152","#221150","#20114d","#1f114b","#1e1049","#1c1046","#1b1044","#1a1041","#180f3f","#170f3c","#160e3a","#150e38","#140d35","#120d33","#110c31","#100c2f","#0f0b2c","#0e0a2a","#0d0a28","#0c0926","#0b0824","#0a0722","#09071f","#08061d","#07051b","#060519","#050417","#040415","#040313","#030311","#02020f","#02020d","#01010b","#010109","#010007","#000006","#000004","#000003"]},"id":"2778","type":"LinearColorMapper"}],"root_ids":["2725"]},"title":"Bokeh Application","version":"1.0.4"}};
+  var render_items = [{"docid":"fd2e7be5-7dee-47cf-ad87-189134f79a48","roots":{"2725":"97055447-900b-4207-bbeb-4430b3f8891a"}}];
+  root.Bokeh.embed.embed_items_notebook(docs_json, render_items);
+
+  }
+  if (root.Bokeh !== undefined) {
+    embed_document(root);
+  } else {
+    var attempts = 0;
+    var timer = setInterval(function(root) {
+      if (root.Bokeh !== undefined) {
+        embed_document(root);
+        clearInterval(timer);
+      }
+      attempts++;
+      if (attempts > 100) {
+        console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+        clearInterval(timer);
+      }
+    }, 10, root)
+  }
+})(window);</script>
+  </body>
+</html>
