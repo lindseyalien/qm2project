@@ -3767,8 +3767,14 @@
 			line-height: inherit;
 			margin: 0;
 			padding: 0;
-			position: absolute;
+			position: fixed;
 			top: 0;
+		}
+
+		.logo img{
+			height: 45px;
+			padding: 0px 5px 0px 0px;
+
 		}
 
 			#header > .logo a {
